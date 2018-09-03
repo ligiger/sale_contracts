@@ -1,0 +1,116 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+    <record model="ir.ui.view" id="kontrakt_kontrakt_tree">
+      <field name="name">kontrakt_tree</field>
+      <field name="model">kontrakt.kontrakt</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="date_create"/>
+          <field name="state"/>
+        </tree>
+      </field>
+    </record>
+    
+    <!-- Kontrakt Form -->
+    <record id="kontrakt_kontrakt_form" model="ir.ui.view">
+      <field name="name">kontrakt_form</field>
+      <field name="model">kontrakt.kontrakt</field>
+      <field name="arch" type="xml">
+        <form string="Kontraktverwaltung">
+          <header>
+            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary"/>
+            <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done,cancel"/>
+          </header>
+          <sheet>
+            <h1><field name="name"/></h1>
+            <group>
+              <group>
+                <field name="date_create"/>
+                <field name="created_by"/>
+              </group>
+              <group>
+                <field name="date_accepted"/>
+                <field name="accepted_by"/>
+              </group>
+            </group>
+            <group>
+              <field name="product_id"/>
+            </group>
+            <group>
+              <field name="abrufe" string="Abrufe" domain="[('kontrakt_product_id', '=', product_id)]" context="{'default_kontrakt_product_id': product_id}">
+                <tree>
+                  <field name="name" string="Abruf"/>
+                  <field name="kontrakt_product_id"/>
+                </tree>
+              </field>
+            </group>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
+    <!-- Abruf Form-->
+    <record id="kontrakt_abruf_form" model="ir.ui.view">
+      <field name="name">abruf_form</field>
+      <field name="model">kontrakt.abruf</field>
+      <field name="arch" type="xml">
+        <form string="Abrufe">
+          <header>
+            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary"/>
+            <field name="state" widget="statusbar" statusbar_visible="draft,active,done,cancel"/>
+          </header>
+          <sheet>
+            <group>
+              <field name="name"/>
+              <field name="create_date"/>
+              <field name="created_by"/>
+            </group>
+            <group>
+              <field name="kontrakt_product_id"/>
+            </group>
+            <group>
+              <field name="positionen" string="Positionen" domain="[('abruf_product_id', '=', kontrakt_product_id)]" context="{'default_abruf_product_id': kontrakt_product_id}">
+                <tree>
+                  <field name="name"/>
+                  <field name="delivery_date"/>
+                  <field name="amount_planned"/>
+                  <field name="amount_done"/>
+                  <field name="state"/>
+                </tree>
+              </field>
+            </group>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
+    
+
+
+    <!-- actions opening views on models -->
+    
+    <record model="ir.actions.act_window" id="kontrakt_kontrakt_action_window">
+      <field name="name">kontrakt.kontrakt window</field>
+      <field name="res_model">kontrakt.kontrakt</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    
+
+    <!-- Top menu item -->
+    
+    <menuitem name="Kontraktverwaltung" id="kontrakt_kontrakt_menu_root"/>
+    
+    <!-- menu categories -->
+    
+    <menuitem name="Kontrakte" id="kontrakt_kontrakt_menu_1" parent="kontrakt_kontrakt_menu_root"/>
+    
+    <!-- actions -->
+    
+    <menuitem name="Kontrakte" id="kontrakt_kontrakt_kontrakte" parent="kontrakt_kontrakt_menu_1"
+              action="kontrakt_kontrakt_action_window"/>
+
+  </data>
+</odoo>

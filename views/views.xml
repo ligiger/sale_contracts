@@ -227,18 +227,49 @@
 
   <!-- inherited views-->
 
+  <!-- Stock picking -->
   <record model="ir.ui.view" id="stock_picking_form_inherited">
       <field name="name">mi_new_view</field>
       <field name="model">stock.picking</field>
       <field name="inherit_id" ref="stock.view_picking_form"/>
-      <!--<field name="mode">primary</field>-->
       <field name="priority" eval="15"/>
       <field name="arch" type="xml">
         <xpath expr="//field[@name='origin']" position="after">
           <field  name="geag_kontrakt" domain="[('state','=','confirmed')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
-          <field  name="geag_abruf" domain="[('parent_kontrakt', '=', geag_kontrakt),('state','=','confirmed')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
-          <field  name="geag_position" domain="[('parent_abruf', '=', geag_abruf),('state','=','confirmed')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
+          <field  name="geag_abruf" domain="[('parent_kontrakt', '=', geag_kontrakt),('state','=','active')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
+          <field  name="geag_position" domain="[('parent_abruf', '=', geag_abruf),('state','=','active')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
           <field  name="geag_delivery_date" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
+        </xpath>
+      </field>
+  </record>
+
+  <!-- Mrp Production -->
+  <record model="ir.ui.view" id="mrp_production_form_inherited">
+      <field name="name">Produktionsauftrag</field>
+      <field name="model">mrp.production</field>
+      <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+      <field name="priority" eval="15"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='origin']" position="after">
+          <field  name="geag_kontrakt" domain="[('state','=','confirmed'),('product_id','=', product_id)]" attrs="{'readonly': [('state', '!=', 'confirmed')]}"/>
+          <field  name="geag_abruf" domain="[('parent_kontrakt', '=', geag_kontrakt),('state','=','active')]" attrs="{'readonly': [('state', '!=', 'confirmed')]}"/>
+          <field  name="geag_position" domain="[('parent_abruf', '=', geag_abruf),('state','=','active')]" attrs="{'readonly': [('state', '!=', 'confirmed')]}"/>
+          <field  name="geag_delivery_date"/>
+        </xpath>
+      </field>
+  </record>
+
+  <record model="ir.ui.view" id="mrp_production_tree_inherited">
+      <field name="name">Produktionsauftrag</field>
+      <field name="model">mrp.production</field>
+      <field name="inherit_id" ref="mrp.mrp_production_tree_view"/>
+      <field name="priority" eval="15"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='product_uom_id']" position="after">
+          <field  name="geag_delivery_date"/>
+          <field  name="geag_kontrakt"/>
+          <field  name="geag_abruf"/>
+          <field  name="geag_position"/>
         </xpath>
       </field>
   </record>

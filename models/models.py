@@ -149,3 +149,11 @@ class Picking(models.Model):
     geag_abruf = fields.Many2one('kontrakt.abruf', string="Abruf")
     geag_position = fields.Many2one('kontrakt.position', string="Position")
     geag_delivery_date = fields.Date(string="Lieferdatum", store=True, related='geag_position.delivery_date', readonly='true')
+
+class MrpProduction(models.Model):
+    _inherit = 'mrp.production'
+
+    geag_kontrakt = fields.Many2one('kontrakt.kontrakt', string="Mengenkontrakt")
+    geag_abruf = fields.Many2one('kontrakt.abruf', string="Abruf")
+    geag_position = fields.Many2one('kontrakt.position', string="Position")
+    geag_delivery_date = fields.Date(string="Lieferdatum", store=True, related='geag_position.delivery_date', readonly='true') 

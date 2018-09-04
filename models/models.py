@@ -24,6 +24,9 @@ class kontrakt_kontrakt(models.Model):
 
     product_id = fields.Many2one('product.product', string="Produkt", required="true", index=True, store=True)
 
+    amount_ordered = fields.Integer('Bestellte Menge', required="true", track_visibility="onchange")
+    amount_delivered = fields.Integer('Gelieferte Menge', readonly="true")
+
     abrufe = fields.Many2many('kontrakt.abruf', 'kontrakt_abruf_rel', 'kontrakt_kontrakt_id', 'kontrakt_abruf_id', string='Abrufe', copy=False)
 
     state = fields.Selection([
@@ -48,6 +51,14 @@ class kontrakt_kontrakt(models.Model):
         self.write({'state': 'confirmed'})
         self.write({'date_accepted': fields.Datetime.now()})
         self.write({'accepted_by': self.env['res.users'].browse(self.env.uid).id})
+    
+    @api.one
+    def done(self):
+        self.write({'state': 'done'})
+    
+    @api.one
+    def edit(self):
+        self.write({'state': 'draft'})
 
 # Definition von Abruf ------------------------------
 class kontrakt_abruf(models.Model):
@@ -58,13 +69,32 @@ class kontrakt_abruf(models.Model):
 
     @api.one
     def confirm(self):
-        self.write({'state': 'active'})    
+        self.write({'state': 'active'})
+    
+    @api.one
+    def done(self):
+        self.write({'state': 'done'})
+    
+    @api.one
+    def edit(self):
+        self.write({'state': 'draft'})
+
+    #@api.model
+    #def default_get(self, vals):
+    #    context = dict(self.env.context)
+    #    contract = context.get('name', False)
+    #    print 'contract'    
 
     name = fields.Char()
     create_date = fields.Datetime('Erstelldatum', default=fields.Datetime.now)
     created_by = fields.Many2one('res.users', string="Erstellt durch", default=lambda self: self.env.user, readonly="true")
 
+    parent_kontrakt = fields.Many2one('kontrakt.kontrakt', string="Kontrakt", index=True, store=True)
+
     kontrakt_product_id = fields.Many2one('product.product', string="Produkt", index=True, store=True)
+
+    amount_ordered = fields.Integer('Bestellte Menge', required="true", track_visibility="onchange")
+    amount_delivered = fields.Integer('Gelieferte Menge', readonly="true")
 
     positionen = fields.Many2many('kontrakt.position', 'kontrakt_position_rel', 'kontrakt_abruf_id', 'kontrakt_position_id', string='Abrufpositionen', copy=False, track_visibility='onchange')
 
@@ -85,6 +115,14 @@ class kontrakt_position(models.Model):
     @api.one
     def confirm(self):
         self.write({'state': 'active'})
+    
+    @api.one
+    def done(self):
+        self.write({'state': 'done'})
+    
+    @api.one
+    def edit(self):
+        self.write({'state': 'draft'})
 
     name = fields.Char()
     create_date = fields.Datetime('Erstelldatum', default=fields.Datetime.now, readonly="true")
@@ -95,10 +133,19 @@ class kontrakt_position(models.Model):
 
     abruf_product_id = fields.Many2one('product.product', string="Produkt", index=True, store=True)
 
+    parent_abruf = fields.Many2one('kontrakt.abruf', string="Abruf", index=True, store=True)
+
     state = fields.Selection([
         ('draft', 'Entwurf'),
         ('active', 'Aktiv'),
         ('done', 'Abgeschlossen'),
         ('cancel', 'Abgebrochen'),
         ], default='draft', track_visibility="onchange")
-    
+
+class Picking(models.Model):
+    _inherit = "stock.picking"
+
+    geag_kontrakt = fields.Many2one('kontrakt.kontrakt', string="Mengenkontrakt")
+    geag_abruf = fields.Many2one('kontrakt.abruf', string="Abruf")
+    geag_position = fields.Many2one('kontrakt.position', string="Position")
+    geag_delivery_date = fields.Date(string="Lieferdatum", store=True, related='geag_position.delivery_date', readonly='true')

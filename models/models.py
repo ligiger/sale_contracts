@@ -1,10 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, fields, api
+from collections import defaultdict
+import math
+
+from odoo import api, fields, models, _
+from odoo.addons import decimal_precision as dp
+from odoo.exceptions import UserError
+from odoo.tools import float_compare
 
 # Definition von Mengenkontrakt -----------------------------
 class kontrakt_kontrakt(models.Model):
+    """ Manufacturing Orders """
     _name = 'kontrakt.kontrakt'
+    _description = 'Vertragsverwaltung'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     name = fields.Char()
     date_create = fields.Datetime('Erstelldatum', default=fields.Datetime.now)
@@ -13,7 +22,7 @@ class kontrakt_kontrakt(models.Model):
     date_accepted = fields.Datetime('Bestätigt am:', readonly="true")
     accepted_by = fields.Many2one('res.users', string="Bestätigt durch", readonly="true")
 
-    product_id = fields.Many2one('product.product', string="Produkt", required="true", index=True)
+    product_id = fields.Many2one('product.product', string="Produkt", required="true", index=True, store=True)
 
     abrufe = fields.Many2many('kontrakt.abruf', 'kontrakt_abruf_rel', 'kontrakt_kontrakt_id', 'kontrakt_abruf_id', string='Abrufe', copy=False)
 
@@ -22,7 +31,7 @@ class kontrakt_kontrakt(models.Model):
         ('confirmed', 'Bestätigt'),
         ('done', 'Abgeschlossen'),
         ('cancel', 'Abgebrochen'),
-        ], default='draft')
+        ], default='draft', track_visibility="onchange")
     
     description = fields.Html('Beschreibung')
     analysis = fields.Html('Problemanalyse')
@@ -38,11 +47,14 @@ class kontrakt_kontrakt(models.Model):
     def confirm(self):
         self.write({'state': 'confirmed'})
         self.write({'date_accepted': fields.Datetime.now()})
-        #self.write({'accepted_by': self.env.user})
+        self.write({'accepted_by': self.env['res.users'].browse(self.env.uid).id})
 
 # Definition von Abruf ------------------------------
 class kontrakt_abruf(models.Model):
+    """ Kontrakt Abrufe """
     _name = "kontrakt.abruf"
+    _description = 'Abrufe'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     @api.one
     def confirm(self):
@@ -52,36 +64,41 @@ class kontrakt_abruf(models.Model):
     create_date = fields.Datetime('Erstelldatum', default=fields.Datetime.now)
     created_by = fields.Many2one('res.users', string="Erstellt durch", default=lambda self: self.env.user, readonly="true")
 
-    kontrakt_product_id = fields.Many2one('product.product', string="Produkt", readonly="true", index=True)
+    kontrakt_product_id = fields.Many2one('product.product', string="Produkt", index=True, store=True)
 
-    positionen = fields.Many2many('kontrakt.position', 'kontrakt_position_rel', 'kontrakt_abruf_id', 'kontrakt_position_id', string='Abrufpositionen', copy=False)
+    positionen = fields.Many2many('kontrakt.position', 'kontrakt_position_rel', 'kontrakt_abruf_id', 'kontrakt_position_id', string='Abrufpositionen', copy=False, track_visibility='onchange')
 
     state = fields.Selection([
         ('draft', 'Entwurf'),
         ('active', 'Aktiv'),
         ('done', 'Abgeschlossen'),
         ('cancel', 'Abgebrochen'),
-        ], default='draft')
+        ], default='draft', track_visibility="onchange")
 
 # Definition von Position ---------------------------
 class kontrakt_position(models.Model):
+    """ Kontrakt Positionen """
     _name = "kontrakt.position"
+    _description = 'Positionen'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     @api.one
     def confirm(self):
         self.write({'state': 'active'})
 
     name = fields.Char()
+    create_date = fields.Datetime('Erstelldatum', default=fields.Datetime.now, readonly="true")
+    created_by = fields.Many2one('res.users', string="Erstellt durch", default=lambda self: self.env.user, readonly="true")
     delivery_date = fields.Date('Lieferdatum:', required="true", track_visibility="onchange")
     amount_planned = fields.Integer('Geplante Menge', required="true", track_visibility="onchange")
-    amount_done = fields.Integer('Belieferte Menge', tracking="onchange")
+    amount_done = fields.Integer('Belieferte Menge', track_visibility="onchange")
 
-    abruf_product_id = fields.Many2one('product.product', string="Produkt", readonly="true", index=True)
+    abruf_product_id = fields.Many2one('product.product', string="Produkt", index=True, store=True)
 
     state = fields.Selection([
         ('draft', 'Entwurf'),
         ('active', 'Aktiv'),
         ('done', 'Abgeschlossen'),
         ('cancel', 'Abgebrochen'),
-        ], default='draft')
+        ], default='draft', track_visibility="onchange")
     

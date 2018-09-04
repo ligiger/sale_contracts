@@ -20,7 +20,7 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base'],
+    'depends': ['base', 'portal'],
 
     # always loaded
     'data': [
@@ -32,4 +32,7 @@
     'demo': [
         'demo/demo.xml',
     ],
+    'uninstall_hook': "uninstall_hook",
+    'installable': True,
+    'auto_install': False,
 }

@@ -39,7 +39,7 @@
               <field name="product_id"/>
             </group>
             <group>
-              <field name="abrufe" string="Abrufe" domain="[('kontrakt_product_id', '=', product_id)]" context="{'default_kontrakt_product_id': product_id}">
+              <field name="abrufe" string="Abrufe" domain="[('kontrakt_product_id', '=', product_id)]" context="{'default_kontrakt_product_id': product_id}" widget="one2many">
                 <tree>
                   <field name="name" string="Abruf"/>
                   <field name="kontrakt_product_id"/>
@@ -47,6 +47,11 @@
               </field>
             </group>
           </sheet>
+          <div class="oe_chatter">
+            <field name="message_follower_ids" widget="mail_followers"/>
+            <field name="activity_ids" widget="mail_activity"/>
+            <field name="message_ids" widget="mail_thread"/>
+          </div>
         </form>
       </field>
     </record>
@@ -71,7 +76,7 @@
               <field name="kontrakt_product_id"/>
             </group>
             <group>
-              <field name="positionen" string="Positionen" domain="[('abruf_product_id', '=', kontrakt_product_id)]" context="{'default_abruf_product_id': kontrakt_product_id}">
+              <field name="positionen" string="Positionen" domain="[('abruf_product_id', '=', kontrakt_product_id)]" context="{'default_abruf_product_id': kontrakt_product_id}" widget="one2many">
                 <tree>
                   <field name="name"/>
                   <field name="delivery_date"/>
@@ -82,21 +87,70 @@
               </field>
             </group>
           </sheet>
+          <div class="oe_chatter">
+            <field name="message_follower_ids" widget="mail_followers"/>
+            <field name="activity_ids" widget="mail_activity"/>
+            <field name="message_ids" widget="mail_thread"/>
+          </div>
         </form>
       </field>
     </record>
 
+<!-- Position Form-->
+    <record id="kontrakt_position_form" model="ir.ui.view">
+      <field name="name">position_form</field>
+      <field name="model">kontrakt.position</field>
+      <field name="arch" type="xml">
+        <form string="Positionen">
+          <header>
+            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary"/>
+            <field name="state" widget="statusbar" statusbar_visible="draft,active,done,cancel"/>
+          </header>
+          <sheet>
+            <group>
+              <field name="name"/>
+              <field name="create_date"/>
+              <field name="created_by"/>
+            </group>
+            <group>
+              <field name="abruf_product_id"/>
+            </group>
+            <group>
+              <field name="delivery_date"/>
+              <field name="amount_planned"/>
+              <field name="amount_done"/>  
+            </group>
+          </sheet>
+          <div class="oe_chatter">
+            <field name="message_follower_ids" widget="mail_followers"/>
+            <field name="activity_ids" widget="mail_activity"/>
+            <field name="message_ids" widget="mail_thread"/>
+          </div>
+        </form>
+      </field>
+    </record>
     
 
 
     <!-- actions opening views on models -->
     
     <record model="ir.actions.act_window" id="kontrakt_kontrakt_action_window">
-      <field name="name">kontrakt.kontrakt window</field>
+      <field name="name">Kontrakte</field>
       <field name="res_model">kontrakt.kontrakt</field>
       <field name="view_mode">tree,form</field>
     </record>
 
+    <record model="ir.actions.act_window" id="kontrakt_abruf_action_window">
+      <field name="name">Abrufe</field>
+      <field name="res_model">kontrakt.abruf</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="kontrakt_position_action_window">
+      <field name="name">Positionen</field>
+      <field name="res_model">kontrakt.position</field>
+      <field name="view_mode">tree,form</field>
+    </record>
     
 
     <!-- Top menu item -->
@@ -111,6 +165,10 @@
     
     <menuitem name="Kontrakte" id="kontrakt_kontrakt_kontrakte" parent="kontrakt_kontrakt_menu_1"
               action="kontrakt_kontrakt_action_window"/>
+    <menuitem name="Abrufe" id="kontrakt_kontrakt_abrufe" parent="kontrakt_kontrakt_menu_1"
+              action="kontrakt_abruf_action_window"/>
+    <menuitem name="Positionen" id="kontrakt_kontrakt_positionen" parent="kontrakt_kontrakt_menu_1"
+              action="kontrakt_position_action_window"/>
 
   </data>
 </odoo>

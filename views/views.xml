@@ -46,14 +46,14 @@
     
     <!-- Kontrakt Form -->
     <record id="kontrakt_kontrakt_form" model="ir.ui.view">
-      <field name="name">kontrakt_form</field>
+      <field name="name">Formular Kontrakte</field>
       <field name="model">kontrakt.kontrakt</field>
       <field name="arch" type="xml">
         <form string="Kontraktverwaltung">
           <header>
-            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary"/>
-            <button name="done" string="Abschliessen" type="object" states="confirmed" class="btn-primary"/>
-            <button name="edit" string="Auf ENTWURF setzen" type="object" states="confirmed" class="btn-primary"/>
+            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
+            <button name="done" string="Abschliessen" type="object" states="confirmed" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
+            <button name="edit" string="Auf ENTWURF setzen" type="object" states="confirmed" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
             <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done,cancel"/>
           </header>
           <sheet>
@@ -99,14 +99,14 @@
 
     <!-- Abruf Form-->
     <record id="kontrakt_abruf_form" model="ir.ui.view">
-      <field name="name">abruf_form</field>
+      <field name="name">Formular Abrufe</field>
       <field name="model">kontrakt.abruf</field>
       <field name="arch" type="xml">
         <form string="Abrufe" create="false">
           <header>
-            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary"/>
-            <button name="done" string="Abschliessen" type="object" states="active" class="btn-primary"/>
-            <button name="edit" string="Auf ENTWURF setzen" type="object" states="active" class="btn-primary"/>
+            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
+            <button name="done" string="Abschliessen" type="object" states="active" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
+            <button name="edit" string="Auf ENTWURF setzen" type="object" states="active" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
             <field name="state" widget="statusbar" statusbar_visible="draft,active,done,cancel"/>
           </header>
           <sheet>
@@ -155,9 +155,9 @@
       <field name="arch" type="xml">
         <form string="Positionen" create="false">
           <header>
-            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary"/>
-            <button name="done" string="Abschliessen" type="object" states="active" class="btn-primary"/>
-            <button name="edit" string="Auf ENTWURF setzen" type="object" states="active" class="btn-primary"/>
+            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
+            <button name="done" string="Abschliessen" type="object" states="active" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
+            <button name="edit" string="Auf ENTWURF setzen" type="object" states="active" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
             <field name="state" widget="statusbar" statusbar_visible="draft,active,done,cancel"/>
           </header>
           <sheet>

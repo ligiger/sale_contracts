@@ -1,2 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_my_module_my_module,my_module.my_module,model_my_module_my_module,,1,0,0,0
+access_kontrakt_manager,Kontrakt Manager,model_kontrakt_kontrakt,group_contracts_manager,1,1,1,1
+access_kontrakt_user,Kontrakt User,model_kontrakt_kontrakt,group_contracts_user,1,0,0,0
+access_abruf_manager,Abruf Manager,model_kontrakt_abruf,group_contracts_manager,1,1,1,1
+access_abruf_user,Abruf User,model_kontrakt_abruf,group_contracts_user,1,0,0,0
+access_position_user,Position User,model_kontrakt_position,group_contracts_user,1,0,0,0
+access_position_manager,Position Manager,model_kontrakt_position,group_contracts_manager,1,1,1,1

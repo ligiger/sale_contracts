@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <report 
+            string="Lot Labels" 
+            id="action_report_lot_labels" 
+            model="stock.production.lot" 
+            name="sale_contracts.lot_label_template"
+            file="sale_contracts.report.lot_label_template" 
+            report_type="qweb-pdf"
+            print_report_name="'Lot Labels - %s' % (object.name or '')"
+        />
+    </data>
+</odoo>

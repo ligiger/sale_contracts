@@ -142,6 +142,15 @@ class kontrakt_position(models.Model):
         ('cancel', 'Abgebrochen'),
         ], default='draft', track_visibility="onchange")
 
+class spediteur(models.Model):
+    """ Spediteure """
+    _name = "spediteur"
+    _description = 'Speditionen'
+
+    name = fields.Char(string="Name der Spedition")
+    abholung = fields.Boolean(string="Abholung")
+
+
 class Picking(models.Model):
     _inherit = "stock.picking"
 
@@ -149,6 +158,8 @@ class Picking(models.Model):
     geag_abruf = fields.Many2one('kontrakt.abruf', string="Abruf")
     geag_position = fields.Many2one('kontrakt.position', string="Position")
     geag_delivery_date = fields.Date(string="Lieferdatum", store=True, related='geag_position.delivery_date', readonly='true')
+    geag_spediteur = fields.Many2one('spediteur', string="Spedition")
+    geag_wird_abgeholt = fields.Boolean(string="Wird abgeholt", related='geag_spediteur.abholung', readonly='true')
 
 class MrpProduction(models.Model):
     _inherit = 'mrp.production'

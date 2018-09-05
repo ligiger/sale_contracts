@@ -240,6 +240,10 @@
           <field  name="geag_position" domain="[('parent_abruf', '=', geag_abruf),('state','=','active')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
           <field  name="geag_delivery_date" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
         </xpath>
+        <xpath expr="//field[@name='move_type']" position="after">
+          <field  name="geag_spediteur"/>
+          <field  name="geag_wird_abgeholt"/>
+        </xpath>
       </field>
   </record>
 

@@ -29,6 +29,8 @@
         'views/templates.xml',
         'security/contracts_security.xml',
         'security/ir.model.access.csv',
+        #'report/sale_contract_reports.xml',
+        #'report/lot_label_template.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

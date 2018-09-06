@@ -79,6 +79,30 @@ class kontrakt_abruf(models.Model):
     def edit(self):
         self.write({'state': 'draft'})
 
+    def add_follower_id(self, res_id, model, partner_id):
+        follower_id = False
+        reg = {
+        'res_id': res_id,
+        'res_model': model,
+        'partner_id': partner_id
+        }
+        try:
+            follower_id = self.env['mail.followers'].create(reg)
+        except:
+            # This partner is already following this record
+            return False
+        return follower_id
+
+    def remove_follower_id(self, res_id, model, partner_id):
+        env = self.env['mail.followers']
+        domain = [('partner_id', '=', partner_id), ('res_id', '=', res_id), ('res_model', '=', model)]
+        try:
+            env.search(domain).unlink()
+            return True
+        except:
+            # The record was either not found, or the unlink operation was not allowed by the current user
+            return False
+
     #@api.model
     #def default_get(self, vals):
     #    context = dict(self.env.context)
@@ -104,6 +128,20 @@ class kontrakt_abruf(models.Model):
         ('done', 'Abgeschlossen'),
         ('cancel', 'Abgebrochen'),
         ], default='draft', track_visibility="onchange")
+
+
+
+    @api.multi
+    def write(self, vals):
+        res = super(kontrakt_abruf, self).write(vals) # Save the form
+        stage_followers = self.env['mymodule.stage_followers'].search([('stage', '=', vals['state'])])
+        for i in stage_followers:
+            self.add_follower_id(self, self.id, 'kontrakt_abruf_form', i['user'])
+        # Message posting is optional. Add_follower_id will still make the partner follow the record
+        messages = "Whatever you want to put in the message box."
+        if messages:
+            self.message_post(body=messages, partner_ids=self.message_follower_ids)
+        return res
 
 # Definition von Position ---------------------------
 class kontrakt_position(models.Model):
@@ -168,3 +206,48 @@ class MrpProduction(models.Model):
     geag_abruf = fields.Many2one('kontrakt.abruf', string="Abruf")
     geag_position = fields.Many2one('kontrakt.position', string="Position")
     geag_delivery_date = fields.Date(string="Lieferdatum", store=True, related='geag_position.delivery_date', readonly='true') 
+
+class stage_followers(models.Model):
+    _name = 'mymodule.stage_followers'
+    user = fields.Many2one('res.partner', required=True, string='User')
+    stage = fields.Selection(selection=[('draft', 'Entwurf'),
+        ('active', 'Aktiv'),
+        ('done', 'Abgeschlossen'),
+        ('cancel', 'Abgebrochen'),
+        ], default='initial', string='Stage')
+
+    def add_follower_id(self, res_id, model, partner_id):
+        follower_id = False
+        reg = {
+        'res_id': res_id,
+        'res_model': model,
+        'partner_id': partner_id
+        }
+        try:
+            follower_id = self.env['mail.followers'].create(reg)
+        except:
+            # This partner is already following this record
+            return False
+        return follower_id
+
+    def remove_follower_id(self, res_id, model, partner_id):
+        env = self.env['mail.followers']
+        domain = [('partner_id', '=', partner_id), ('res_id', '=', res_id), ('res_model', '=', model)]
+        try:
+            env.search(domain).unlink()
+            return True
+        except:
+            # The record was either not found, or the unlink operation was not allowed by the current user
+            return False
+
+    @api.multi
+    def write(self, vals):
+        res = super(mymodule, self).write(vals) # Save the form
+        stage_followers = self.env['mymodule.stage_followers'].search([('stage', '=', vals['state'])])
+        for i in stage_followers:
+            add_follower_id(self, self.id, 'mymodule.myform', i['user'])
+        # Message posting is optional. Add_follower_id will still make the partner follow the record
+        messages = "Whatever you want to put in the message box."
+        if messages:
+            self.message_post(body=messages, partner_ids=self.message_follower_ids)
+        return res

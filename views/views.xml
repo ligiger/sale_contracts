@@ -2,12 +2,43 @@
   <data>
     <!-- explicit list view definition -->
     <record model="ir.ui.view" id="kontrakt_kontrakt_tree">
-      <field name="name">kontrakt_tree</field>
+      <field name="name">Liste der Kontrakte</field>
       <field name="model">kontrakt.kontrakt</field>
       <field name="arch" type="xml">
         <tree>
           <field name="name"/>
+          <field name="product_id"/>
           <field name="date_create"/>
+          <field name="amount_ordered"/>
+          <field name="state"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="kontrakt_abruf_tree">
+      <field name="name">Liste der Abrufe</field>
+      <field name="model">kontrakt.abruf</field>
+      <field name="arch" type="xml">
+        <tree create="false">
+          <field name="name"/>
+          <field name="kontrakt_product_id"/>
+          <field name="parent_kontrakt"/>
+          <field name="state"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="kontrakt_position_tree">
+      <field name="name">Liste der Positionen</field>
+      <field name="model">kontrakt.position</field>
+      <field name="arch" type="xml">
+        <tree create="false">
+          <field name="name"/>
+          <field name="abruf_product_id"/>
+          <field name="delivery_date"/>
+          <field name="amount_planned"/>
+          <field name="amount_done"/>
+          <field name="parent_abruf"/>
           <field name="state"/>
         </tree>
       </field>
@@ -15,16 +46,18 @@
     
     <!-- Kontrakt Form -->
     <record id="kontrakt_kontrakt_form" model="ir.ui.view">
-      <field name="name">kontrakt_form</field>
+      <field name="name">Formular Kontrakte</field>
       <field name="model">kontrakt.kontrakt</field>
       <field name="arch" type="xml">
         <form string="Kontraktverwaltung">
           <header>
-            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary"/>
+            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
+            <button name="done" string="Abschliessen" type="object" states="confirmed" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
+            <button name="edit" string="Auf ENTWURF setzen" type="object" states="confirmed" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
             <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done,cancel"/>
           </header>
           <sheet>
-            <h1><field name="name"/></h1>
+            <h1><field name="name" attrs="{'readonly':[('state','!=','draft')]}"/></h1>
             <group>
               <group>
                 <field name="date_create"/>
@@ -36,10 +69,18 @@
               </group>
             </group>
             <group>
-              <field name="product_id"/>
+              <field name="product_id" attrs="{'readonly':[('state','!=','draft')]}"/>
             </group>
             <group>
-              <field name="abrufe" string="Abrufe" domain="[('kontrakt_product_id', '=', product_id)]" context="{'default_kontrakt_product_id': product_id}" widget="one2many">
+              <field name="amount_ordered" attrs="{'readonly':[('state','!=','draft')]}"/>
+              <field name="amount_delivered"/>
+            </group>
+            <group>
+              <field name="abrufe" string="Abrufe" 
+              domain="[('kontrakt_product_id', '=', product_id),('parent_kontrakt', '=', id)]" 
+              context="{'default_kontrakt_product_id': product_id, 'default_parent_kontrakt': id}" 
+              widget="one2many"
+              attrs="{'readonly':[('state','!=','draft')]}">
                 <tree>
                   <field name="name" string="Abruf"/>
                   <field name="kontrakt_product_id"/>
@@ -58,25 +99,36 @@
 
     <!-- Abruf Form-->
     <record id="kontrakt_abruf_form" model="ir.ui.view">
-      <field name="name">abruf_form</field>
+      <field name="name">Formular Abrufe</field>
       <field name="model">kontrakt.abruf</field>
       <field name="arch" type="xml">
-        <form string="Abrufe">
+        <form string="Abrufe" create="false">
           <header>
-            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary"/>
+            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
+            <button name="done" string="Abschliessen" type="object" states="active" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
+            <button name="edit" string="Auf ENTWURF setzen" type="object" states="active" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
             <field name="state" widget="statusbar" statusbar_visible="draft,active,done,cancel"/>
           </header>
           <sheet>
             <group>
-              <field name="name"/>
-              <field name="create_date"/>
+              <field name="name" attrs="{'readonly':[('state','!=','draft')]}"/>
+              <field name="create_date" attrs="{'readonly':[('state','!=','draft')]}"/>
               <field name="created_by"/>
             </group>
             <group>
-              <field name="kontrakt_product_id"/>
+              <field name="kontrakt_product_id" attrs="{'readonly':[('state','!=','draft')]}"/>
+              <field name="parent_kontrakt" string="Kontrakt" attrs="{'readonly':[('state','!=','draft')]}"/>
             </group>
             <group>
-              <field name="positionen" string="Positionen" domain="[('abruf_product_id', '=', kontrakt_product_id)]" context="{'default_abruf_product_id': kontrakt_product_id}" widget="one2many">
+              <field name="amount_ordered" attrs="{'readonly':[('state','!=','draft')]}"/>
+              <field name="amount_delivered"/>
+            </group>
+            <group>
+              <field name="positionen" string="Positionen" 
+              domain="[('abruf_product_id', '=', kontrakt_product_id)]" 
+              context="{'default_abruf_product_id': kontrakt_product_id, 'default_parent_abruf': id}" 
+              widget="one2many"
+              attrs="{'readonly':[('state','!=','draft')]}">
                 <tree>
                   <field name="name"/>
                   <field name="delivery_date"/>
@@ -101,24 +153,27 @@
       <field name="name">position_form</field>
       <field name="model">kontrakt.position</field>
       <field name="arch" type="xml">
-        <form string="Positionen">
+        <form string="Positionen" create="false">
           <header>
-            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary"/>
+            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
+            <button name="done" string="Abschliessen" type="object" states="active" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
+            <button name="edit" string="Auf ENTWURF setzen" type="object" states="active" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
             <field name="state" widget="statusbar" statusbar_visible="draft,active,done,cancel"/>
           </header>
           <sheet>
-            <group>
-              <field name="name"/>
+            <h1><field name="name" attrs="{'readonly':[('state','!=','draft')]}"/></h1>
+            <group >
               <field name="create_date"/>
               <field name="created_by"/>
             </group>
             <group>
-              <field name="abruf_product_id"/>
+              <field name="abruf_product_id" attrs="{'readonly':[('state','!=','draft')]}"/>
+              <field name="parent_abruf" string="Abruf" attrs="{'readonly':[('state','!=','draft')]}"/>
             </group>
             <group>
-              <field name="delivery_date"/>
-              <field name="amount_planned"/>
-              <field name="amount_done"/>  
+              <field name="delivery_date" attrs="{'readonly':[('state','!=','draft')]}"/>
+              <field name="amount_planned" attrs="{'readonly':[('state','!=','draft')]}"/>
+              <field name="amount_done" attrs="{'readonly':[('state','=','done')]}"/>  
             </group>
           </sheet>
           <div class="oe_chatter">
@@ -169,6 +224,59 @@
               action="kontrakt_abruf_action_window"/>
     <menuitem name="Positionen" id="kontrakt_kontrakt_positionen" parent="kontrakt_kontrakt_menu_1"
               action="kontrakt_position_action_window"/>
+
+  <!-- inherited views-->
+
+  <!-- Stock picking -->
+  <record model="ir.ui.view" id="stock_picking_form_inherited">
+      <field name="name">mi_new_view</field>
+      <field name="model">stock.picking</field>
+      <field name="inherit_id" ref="stock.view_picking_form"/>
+      <field name="priority" eval="15"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='origin']" position="after">
+          <field  name="geag_kontrakt" domain="[('state','=','confirmed')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
+          <field  name="geag_abruf" domain="[('parent_kontrakt', '=', geag_kontrakt),('state','=','active')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
+          <field  name="geag_position" domain="[('parent_abruf', '=', geag_abruf),('state','=','active')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
+          <field  name="geag_delivery_date" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
+        </xpath>
+        <xpath expr="//field[@name='move_type']" position="after">
+          <field  name="geag_spediteur"/>
+          <field  name="geag_wird_abgeholt"/>
+        </xpath>
+      </field>
+  </record>
+
+  <!-- Mrp Production -->
+  <record model="ir.ui.view" id="mrp_production_form_inherited">
+      <field name="name">Produktionsauftrag</field>
+      <field name="model">mrp.production</field>
+      <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+      <field name="priority" eval="15"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='origin']" position="after">
+          <field  name="geag_kontrakt" domain="[('state','=','confirmed'),('product_id','=', product_id)]" attrs="{'readonly': [('state', '!=', 'confirmed')]}"/>
+          <field  name="geag_abruf" domain="[('parent_kontrakt', '=', geag_kontrakt),('state','=','active')]" attrs="{'readonly': [('state', '!=', 'confirmed')]}"/>
+          <field  name="geag_position" domain="[('parent_abruf', '=', geag_abruf),('state','=','active')]" attrs="{'readonly': [('state', '!=', 'confirmed')]}"/>
+          <field  name="geag_delivery_date"/>
+        </xpath>
+      </field>
+  </record>
+
+  <record model="ir.ui.view" id="mrp_production_tree_inherited">
+      <field name="name">Produktionsauftrag</field>
+      <field name="model">mrp.production</field>
+      <field name="inherit_id" ref="mrp.mrp_production_tree_view"/>
+      <field name="priority" eval="15"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='product_uom_id']" position="after">
+          <field  name="geag_delivery_date"/>
+          <field  name="geag_kontrakt"/>
+          <field  name="geag_abruf"/>
+          <field  name="geag_position"/>
+        </xpath>
+      </field>
+  </record>
 
   </data>
 </odoo>

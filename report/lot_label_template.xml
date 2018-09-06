@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <template id="lot_label_template">
+    <t t-call="web.basic_layout">
+        <t t-foreach="docs" t-as="o">
+            <t>
+                <div class="page">
+                    <h1>Test</h1>
+                </div>
+            </t>
+        </t>
+    </t>
+</template>
+
+</odoo>

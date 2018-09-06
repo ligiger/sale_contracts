@@ -20,13 +20,17 @@
     'version': '0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'portal'],
+    'depends': ['base', 'portal', 'stock','mrp'],
 
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
         'views/views.xml',
         'views/templates.xml',
+        'security/contracts_security.xml',
+        'security/ir.model.access.csv',
+        #'report/sale_contract_reports.xml',
+        #'report/lot_label_template.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

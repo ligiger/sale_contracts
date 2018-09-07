@@ -278,5 +278,33 @@
       </field>
   </record>
 
+<record model="ir.ui.view" id="settings_sfollowers_form">
+  <field name="name">mymodule.settings_sfollowers.form</field>
+  <field name="model">mymodule.stage_followers</field>
+  <field name="arch" type="xml">
+    <form>
+      <field name="user" />
+      <field name="stage" />
+    </form>
+  </field>
+</record>
+<record model="ir.ui.view" id="settings_sfollowers_list">
+  <field name="name">mymodule.settings_sfollowers.list</field>
+  <field name="model">mymodule.stage_followers</field>
+  <field name="arch" type="xml">
+    <tree>
+      <field name="user" />
+      <field name="stage" />
+    </tree>
+  </field>
+</record>
+<record model="ir.actions.act_window" id="action_view_sfollowers_settings">
+  <field name="name">MyModule Settings - Stage Followers</field>
+  <field name="res_model">mymodule.stage_followers</field>
+  <field name="view_mode">tree,form</field>
+</record>
+<menuitem name="Stage Followers"  
+  id="menu_settings_sfollowers" 
+  action="action_view_sfollowers_settings" />
   </data>
 </odoo>

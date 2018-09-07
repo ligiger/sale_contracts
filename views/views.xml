@@ -277,7 +277,7 @@
         </xpath>
       </field>
   </record>
-
+<!-->
 <record model="ir.ui.view" id="settings_sfollowers_form">
   <field name="name">mymodule.settings_sfollowers.form</field>
   <field name="model">mymodule.stage_followers</field>
@@ -306,5 +306,7 @@
 <menuitem name="Stage Followers"  
   id="menu_settings_sfollowers" 
   action="action_view_sfollowers_settings" />
+  -->
   </data>
+
 </odoo>

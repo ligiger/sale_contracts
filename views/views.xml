@@ -19,7 +19,7 @@
       <field name="name">Liste der Abrufe</field>
       <field name="model">kontrakt.abruf</field>
       <field name="arch" type="xml">
-        <tree create="false">
+        <tree>
           <field name="name"/>
           <field name="kontrakt_product_id"/>
           <field name="parent_kontrakt"/>
@@ -32,7 +32,7 @@
       <field name="name">Liste der Positionen</field>
       <field name="model">kontrakt.position</field>
       <field name="arch" type="xml">
-        <tree create="false">
+        <tree>
           <field name="name"/>
           <field name="abruf_product_id"/>
           <field name="delivery_date"/>
@@ -102,7 +102,7 @@
       <field name="name">Formular Abrufe</field>
       <field name="model">kontrakt.abruf</field>
       <field name="arch" type="xml">
-        <form string="Abrufe" create="false">
+        <form string="Abrufe">
           <header>
             <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
             <button name="done" string="Abschliessen" type="object" states="active" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
@@ -116,7 +116,7 @@
               <field name="created_by"/>
             </group>
             <group>
-              <field name="kontrakt_product_id" attrs="{'readonly':[('state','!=','draft')]}"/>
+              <field name="kontrakt_product_id"/>
               <field name="parent_kontrakt" string="Kontrakt" attrs="{'readonly':[('state','!=','draft')]}"/>
             </group>
             <group>
@@ -153,7 +153,7 @@
       <field name="name">position_form</field>
       <field name="model">kontrakt.position</field>
       <field name="arch" type="xml">
-        <form string="Positionen" create="false">
+        <form string="Positionen">
           <header>
             <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
             <button name="done" string="Abschliessen" type="object" states="active" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
@@ -167,7 +167,7 @@
               <field name="created_by"/>
             </group>
             <group>
-              <field name="abruf_product_id" attrs="{'readonly':[('state','!=','draft')]}"/>
+              <field name="abruf_product_id"/>
               <field name="parent_abruf" string="Abruf" attrs="{'readonly':[('state','!=','draft')]}"/>
             </group>
             <group>

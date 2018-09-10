@@ -27,7 +27,8 @@ class kontrakt_kontrakt(models.Model):
     amount_ordered = fields.Integer('Bestellte Menge', required="true", track_visibility="onchange")
     amount_delivered = fields.Integer('Gelieferte Menge', readonly="true")
 
-    abrufe = fields.Many2many('kontrakt.abruf', 'kontrakt_abruf_rel', 'kontrakt_kontrakt_id', 'kontrakt_abruf_id', string='Abrufe', copy=False)
+    #abrufe = fields.Many2many('kontrakt.abruf', 'kontrakt_abruf_rel', 'kontrakt_kontrakt_id', 'kontrakt_abruf_id', string='Abrufe', copy=False)
+    abrufe = fields.One2many('kontrakt.abruf', 'parent_kontrakt', string="Abrufe", copy=False, track_visibility='onchange')
 
     state = fields.Selection([
         ('draft', 'Entwurf'),
@@ -113,14 +114,15 @@ class kontrakt_abruf(models.Model):
     create_date = fields.Datetime('Erstelldatum', default=fields.Datetime.now)
     created_by = fields.Many2one('res.users', string="Erstellt durch", default=lambda self: self.env.user, readonly="true")
 
-    parent_kontrakt = fields.Many2one('kontrakt.kontrakt', string="Kontrakt", index=True, store=True)
+    parent_kontrakt = fields.Many2one('kontrakt.kontrakt', string="Kontrakt", index=True, store=True, readonly="true")
 
-    kontrakt_product_id = fields.Many2one('product.product', string="Produkt", index=True, store=True)
+    kontrakt_product_id = fields.Many2one(related='parent_kontrakt.product_id', string="Produkt", readonly="true")
 
     amount_ordered = fields.Integer('Bestellte Menge', required="true", track_visibility="onchange")
     amount_delivered = fields.Integer('Gelieferte Menge', readonly="true")
 
-    positionen = fields.Many2many('kontrakt.position', 'kontrakt_position_rel', 'kontrakt_abruf_id', 'kontrakt_position_id', string='Abrufpositionen', copy=False, track_visibility='onchange')
+    #positionen = fields.Many2many('kontrakt.position', 'kontrakt_position_rel', 'kontrakt_abruf_id', 'kontrakt_position_id', string='Abrufpositionen', copy=False, track_visibility='onchange')
+    positionen = fields.One2many('kontrakt.position', 'parent_abruf', string="Abrufpositionen", copy=False, track_visibility='onchange')
 
     state = fields.Selection([
         ('draft', 'Entwurf'),
@@ -185,9 +187,9 @@ class kontrakt_position(models.Model):
     amount_planned = fields.Integer('Geplante Menge', required="true", track_visibility="onchange")
     amount_done = fields.Integer('Belieferte Menge', track_visibility="onchange")
 
-    abruf_product_id = fields.Many2one('product.product', string="Produkt", index=True, store=True)
 
-    parent_abruf = fields.Many2one('kontrakt.abruf', string="Abruf", index=True, store=True)
+    parent_abruf = fields.Many2one('kontrakt.abruf', string="Abruf", index=True, store=True, readonly="true")
+    abruf_product_id = fields.Many2one(related='parent_abruf.kontrakt_product_id', string="Produkt", readonly="true")
 
     state = fields.Selection([
         ('draft', 'Entwurf'),

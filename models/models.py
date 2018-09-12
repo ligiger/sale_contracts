@@ -132,35 +132,6 @@ class kontrakt_abruf(models.Model):
         ], default='draft', track_visibility="onchange")
 
 
-'''
-    @api.multi
-    def write(self, vals):
-        res = super(kontrakt_abruf, self).write(vals) # Save the form
-        stage_followers = self.env['mymodule.stage_followers'].search([('stage', '=', vals['state'])])
-        anz = 0
-        for i in stage_followers:
-            #self.add_follower_id(self, 'kontrakt.abruf', i['user'])
-            reg = {
-                'res_id': self.id,
-                'res_model': 'kontrakt.abruf',
-                'partner_id': i['user'].id
-            }
-            try:
-                follower_id = self.env['mail.followers'].create(reg)
-            #    raise UserError('OK')
-            except:
-                # This partner is already following this record
-            #    raise UserError('FAIL')
-                return False
-            anz = anz + 1
-        # Message posting is optional. Add_follower_id will still make the partner follow the record
-        #raise UserError(anz)
-        messages = "Whatever you want to put in the message box."
-        if messages:
-            self.message_post(body=messages, partner_ids=self.message_follower_ids)
-        return res
-        '''
-
 # Definition von Position ---------------------------
 class kontrakt_position(models.Model):
     """ Kontrakt Positionen """
@@ -179,13 +150,21 @@ class kontrakt_position(models.Model):
     @api.one
     def edit(self):
         self.write({'state': 'draft'})
+    
+    @api.onchange('amount_done')
+    def on_change_amount_done(self):
+        for record in self:
+            if record.amount_done == record.amount_planned and record.state== 'active':
+                record.state = 'done'
+                record.amount_done = record.amount_planned
+            #print self.state
 
     name = fields.Char()
     create_date = fields.Datetime('Erstelldatum', default=fields.Datetime.now, readonly="true")
     created_by = fields.Many2one('res.users', string="Erstellt durch", default=lambda self: self.env.user, readonly="true")
     delivery_date = fields.Date('Lieferdatum:', required="true", track_visibility="onchange")
     amount_planned = fields.Integer('Geplante Menge', required="true", track_visibility="onchange")
-    amount_done = fields.Integer('Belieferte Menge', track_visibility="onchange")
+    amount_done = fields.Integer('Belieferte Menge', track_visibility="onchange", store=True)
 
 
     parent_abruf = fields.Many2one('kontrakt.abruf', string="Abruf", index=True, store=True, readonly="true")

@@ -3,7 +3,7 @@ access_kontrakt_manager,Kontrakt Manager,model_kontrakt_kontrakt,group_contracts
 access_kontrakt_user,Kontrakt User,model_kontrakt_kontrakt,group_contracts_user,1,0,0,0
 access_abruf_manager,Abruf Manager,model_kontrakt_abruf,group_contracts_manager,1,1,1,1
 access_abruf_user,Abruf User,model_kontrakt_abruf,group_contracts_user,1,0,0,0
-access_position_user,Position User,model_kontrakt_position,group_contracts_user,1,0,0,0
+access_position_user,Position User,model_kontrakt_position,group_contracts_user,1,1,0,0
 access_position_manager,Position Manager,model_kontrakt_position,group_contracts_manager,1,1,1,1
 access_spedition_manager,Spedition Manager,model_spediteur,group_contracts_manager,1,1,1,1
 access_spedition_user,Spedition User,model_spediteur,group_contracts_user,1,1,1,0

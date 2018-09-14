@@ -44,6 +44,23 @@
       </field>
     </record>
     
+    <record model="ir.ui.view" id="forecast_list_tree">
+      <field name="name">Forecastliste</field>
+      <field name="model">forecast</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="bestellung"/>
+          <field name="position"/>
+          <field name="lieferant"/>
+          <field name="art_nr"/>
+          <field name="art_name"/>
+          <field name="due_date"/>
+          <field name="menge_bestellt"/>
+          <field name="state"/>
+        </tree>
+      </field>
+    </record>
+
     <!-- Kontrakt Form -->
     <record id="kontrakt_kontrakt_form" model="ir.ui.view">
       <field name="name">Formular Kontrakte</field>
@@ -207,6 +224,20 @@
       <field name="view_mode">tree,form</field>
     </record>
     
+    <record model="ir.actions.act_window" id="forecast_action_window">
+      <field name="name">Lieferforecast</field>
+      <field name="res_model">forecast</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <record model="ir.actions.server" id="check_forupdates_server">
+            <field name="name">Check For Updates Action</field>
+            <field name="model_id" ref="model_forecast"/>
+            <field name="state">code</field>
+            <field name="code">model.check_updates()</field>
+        </record>
+
+        <menuitem id="menu_updates_fc" parent="lieferforecast_menu_1" action="check_forupdates_server"/>
 
     <!-- Top menu item -->
     
@@ -215,7 +246,7 @@
     <!-- menu categories -->
     
     <menuitem name="Kontrakte" id="kontrakt_kontrakt_menu_1" parent="kontrakt_kontrakt_menu_root"/>
-    
+    <menuitem name="Lieferforecast" id="lieferforecast_menu_1" parent="kontrakt_kontrakt_menu_root"/>
     <!-- actions -->
     
     <menuitem name="Kontrakte" id="kontrakt_kontrakt_kontrakte" parent="kontrakt_kontrakt_menu_1"
@@ -224,6 +255,8 @@
               action="kontrakt_abruf_action_window"/>
     <menuitem name="Positionen" id="kontrakt_kontrakt_positionen" parent="kontrakt_kontrakt_menu_1"
               action="kontrakt_position_action_window"/>
+    <menuitem name="Liste" id="lieferforecast_action_item" parent="lieferforecast_menu_1"
+              action="forecast_action_window"/>
 
   <!-- inherited views-->
 

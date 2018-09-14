@@ -3,10 +3,15 @@
 from collections import defaultdict
 import math
 
-from odoo import api, fields, models, _
+from odoo import api, fields, exceptions, models, _
 from odoo.addons import decimal_precision as dp
 from odoo.exceptions import UserError
 from odoo.tools import float_compare
+import xlrd
+from xlrd import open_workbook
+import os
+from os.path import join, dirname, abspath
+import datetime
 
 # Definition von Mengenkontrakt -----------------------------
 class kontrakt_kontrakt(models.Model):
@@ -185,6 +190,127 @@ class spediteur(models.Model):
     name = fields.Char(string="Name der Spedition")
     abholung = fields.Boolean(string="Abholung")
 
+
+class forecast(models.Model):
+    """ Lieferforecast """
+    _name = "forecast"
+    _description = 'Lieferforecast'
+
+    _sql_constraints = [
+        ('bestellung_key_unique', 
+        'unique(bestellung,position,due_date)',
+        'Die Bestellung ist nicht Einzigartig!')
+    ]
+
+    bestellung = fields.Char(string="Bestellung")
+    position = fields.Char(string="Position")
+    lieferant = fields.Char(string="Lieferant")
+    art_nr = fields.Char(string="Artikelnummer")
+    art_name = fields.Char(string="Artikelname")
+    due_date = fields.Date(string="Zieldatum")
+    menge_bestellt = fields.Integer(string="Menge Bestellt")
+    menge_erhalten = fields.Integer(string="Menge Erhalten (VMS)")
+
+    state = fields.Selection([
+        ('wait', 'Warteschlange'),
+        ('done', 'Abgeschlossen'),
+        ('cancel', 'Abgebrochen'),
+        ], default='wait', track_visibility="onchange")
+
+    @api.multi
+    def check_updates(self):
+        #it is meta object of ir.attachment
+        #file_obj = self.session.pool.get('impexp.file')
+        #f = file_obj.browse(self.session.cr, self.session.uid, file_id)
+        #data_file = b64decode(f.attachment_id.datas)
+        #raise exceptions.ValidationError("Error! Panel")
+        filepath = r'C:\Users\Admin\Desktop\Terminliste\Kopie_LGI.xlsx'
+        #a_dir = 'C:/Users/Admin/Desktop/Terminliste'
+        new = 0
+        deleted = 0
+
+        wb = open_workbook(filepath)
+        #sheet = wb.sheet_by_index(1)
+        for sheet in wb.sheets():
+            data = [[0 for x in range(sheet.ncols)] for y in range(sheet.nrows)] 
+            for row in xrange(2, sheet.nrows):
+                #data_row = []
+                for col in range(sheet.ncols):
+                    value = (sheet.cell(row, col).value)
+                    #data_row.append(value)
+                    data[row][col] = value
+                '''date_float = data_row[6]
+                bestellung = int(data_row[0])
+                position = int(data_row[1])
+                duedate = datetime.datetime(*xlrd.xldate_as_tuple(data_row[6], wb.datemode))
+
+                if self.search_count([('bestellung', '=', bestellung),('position', '=', position),('due_date', '=', duedate)]) == 0:
+                    new = new + 1
+                    
+                    #raise UserError(duedate)
+                    dataset = {
+                                'bestellung' : bestellung,
+                                'position' : position,
+                                'lieferant' : data_row[2],
+                                'art_nr' : data_row[3],
+                                'art_name' : data_row[5],
+                                'due_date' : duedate,
+                                'menge_bestellt' : data_row[7],
+                            }
+                    self.env['forecast'].create(dataset)
+                    self.env.cr.commit()'''
+
+            for zeile in xrange(2, sheet.nrows):
+                date_float = data[zeile][6]
+                bestellung = int(data[zeile][0])
+                position = int(data[zeile][1])
+                duedate = datetime.datetime(*xlrd.xldate_as_tuple(date_float, wb.datemode))
+
+                if self.search_count([('bestellung', '=', bestellung),('position', '=', position),('due_date', '=', duedate)]) == 0:
+                    dataset = {
+                                'bestellung' : bestellung,
+                                'position' : position,
+                                'lieferant' : data[zeile][2],
+                                'art_nr' : data[zeile][3],
+                                'art_name' : data[zeile][5],
+                                'due_date' : duedate,
+                                'menge_bestellt' : data[zeile][7],
+                            }
+                    new = new + 1
+                    self.env['forecast'].create(dataset)
+                    self.env.cr.commit()
+
+            records = self.env['forecast'].search([])
+            rec = 0
+
+            for record in records:
+                rec_bestellung = record.bestellung
+                rec_position = record.position
+                rec_date = record.due_date
+                found = False
+                rec = rec+1
+                
+
+                for zeile in xrange(2, sheet.nrows):
+                    date_float = data[zeile][6]
+                    bestellung = int(data[zeile][0])
+                    position = int(data[zeile][1])
+                    duedate = datetime.datetime(*xlrd.xldate_as_tuple(date_float, wb.datemode)).date()
+
+                    #raise UserError(zeile)
+                    #raise UserError("%s, " % bestellung + "%s, " % position + "%s\n" % duedate + "%s, " %rec_bestellung + "%s, " % rec_position + "%s" % rec_date) 
+                    #if (rec_bestellung == bestellung) and (rec_position == position) and (rec_date == duedate):
+                    if rec_bestellung == str(bestellung) and rec_position == str(position) and rec_date == str(duedate) and self.state !='wait':
+                        #raise UserError("%s, " % bestellung + "%s, " % position + "%s\n" % duedate + "%s, " %rec_bestellung + "%s, " % rec_position + "%s" % rec_date)
+                        found = True
+
+                if found == False and record.state =='wait':
+                    self.search([('id', '=', record.id)]).unlink()
+                    self.env.cr.commit()
+                    deleted = deleted + 1
+
+        #raise UserError(data)           
+        raise UserError("Neu: %s" % new + " Deleted: %s" % deleted + "Recs Walked: %s" %rec)
 
 class Picking(models.Model):
     _inherit = "stock.picking"

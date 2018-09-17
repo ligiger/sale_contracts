@@ -57,8 +57,8 @@
           <field name="due_date"/>
           <field name="menge_bestellt"/>
           <field name="state"/>
-          <field name="creation_date"/>
-          <field name="current_date"/>
+          <field name="creation_date" invisible = "1"/>
+          <field name="current_date" invisible = "1"/>
         </tree>
       </field>
     </record>

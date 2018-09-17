@@ -12,6 +12,7 @@ from xlrd import open_workbook
 import os
 from os.path import join, dirname, abspath
 import datetime
+from xml.dom import minidom
 
 # Definition von Mengenkontrakt -----------------------------
 class kontrakt_kontrakt(models.Model):
@@ -236,99 +237,82 @@ class forecast(models.Model):
         #f = file_obj.browse(self.session.cr, self.session.uid, file_id)
         #data_file = b64decode(f.attachment_id.datas)
         #raise exceptions.ValidationError("Error! Panel")
-        filepath = r'C:\Users\Admin\Desktop\Terminliste\Kopie_LGI.xlsx'
-        #a_dir = 'C:/Users/Admin/Desktop/Terminliste'
+        #filepath = r'C:\Users\Admin\Desktop\Terminliste\Kopie_LGI.xlsx'
+        a_dir = r'C:\Users\Admin\Desktop\Terminliste'
         new = 0
         deleted = 0
 
-        wb = open_workbook(filepath)
-        #sheet = wb.sheet_by_index(1)
-        for sheet in wb.sheets():
-            data = [[0 for x in range(sheet.ncols)] for y in range(sheet.nrows)] 
-            for row in xrange(2, sheet.nrows):
-                #data_row = []
-                for col in range(sheet.ncols):
-                    value = (sheet.cell(row, col).value)
-                    #data_row.append(value)
-                    data[row][col] = value
-                '''date_float = data_row[6]
-                bestellung = int(data_row[0])
-                position = int(data_row[1])
-                duedate = datetime.datetime(*xlrd.xldate_as_tuple(data_row[6], wb.datemode))
+        for filename in os.listdir(a_dir):
+            filepath = minidom.parse(a_dir + '/' + filename)
 
-                if self.search_count([('bestellung', '=', bestellung),('position', '=', position),('due_date', '=', duedate)]) == 0:
-                    new = new + 1
-                    
-                    #raise UserError(duedate)
-                    dataset = {
-                                'bestellung' : bestellung,
-                                'position' : position,
-                                'lieferant' : data_row[2],
-                                'art_nr' : data_row[3],
-                                'art_name' : data_row[5],
-                                'due_date' : duedate,
-                                'menge_bestellt' : data_row[7],
-                            }
-                    self.env['forecast'].create(dataset)
-                    self.env.cr.commit()'''
-
-            for zeile in xrange(2, sheet.nrows):
-                date_float = data[zeile][6]
-                bestellung = int(data[zeile][0])
-                position = int(data[zeile][1])
-                duedate = datetime.datetime(*xlrd.xldate_as_tuple(date_float, wb.datemode))
-
-                if self.search_count([('bestellung', '=', bestellung),('position', '=', position),('due_date', '=', duedate)]) == 0:
-                    dataset = {
-                                'bestellung' : bestellung,
-                                'position' : position,
-                                'lieferant' : data[zeile][2],
-                                'art_nr' : data[zeile][3],
-                                'art_name' : data[zeile][5],
-                                'due_date' : duedate,
-                                'menge_bestellt' : data[zeile][7],
-                                'state' : 'new',
-                            }
-                    new = new + 1
-                    self.env['forecast'].create(dataset)
-                    self.env.cr.commit()
-
-            records = self.env['forecast'].search([])
-            rec = 0
-
-            for record in records:
-                rec_bestellung = record.bestellung
-                rec_position = record.position
-                rec_date = record.due_date
-                found = False
-                rec = rec+1
-                record.write({'current_date' : fields.datetime.now()})
-                self.env.cr.commit()
+            wb = open_workbook(filepath)
+            #sheet = wb.sheet_by_index(1)
+            for sheet in wb.sheets():
+                data = [[0 for x in range(sheet.ncols)] for y in range(sheet.nrows)] 
+                for row in xrange(2, sheet.nrows):
+                    #data_row = []
+                    for col in range(sheet.ncols):
+                        value = (sheet.cell(row, col).value)
+                        #data_row.append(value)
+                        data[row][col] = value
 
                 for zeile in xrange(2, sheet.nrows):
                     date_float = data[zeile][6]
                     bestellung = int(data[zeile][0])
                     position = int(data[zeile][1])
-                    duedate = datetime.datetime(*xlrd.xldate_as_tuple(date_float, wb.datemode)).date()
+                    duedate = datetime.datetime(*xlrd.xldate_as_tuple(date_float, wb.datemode))
 
-                    #raise UserError(zeile)
-                    #raise UserError("%s, " % bestellung + "%s, " % position + "%s\n" % duedate + "%s, " %rec_bestellung + "%s, " % rec_position + "%s" % rec_date) 
-                    #if (rec_bestellung == bestellung) and (rec_position == position) and (rec_date == duedate):
-                    if rec_bestellung == str(bestellung) and rec_position == str(position) and rec_date == str(duedate) and self.state !='wait':
-                        #raise UserError("%s, " % bestellung + "%s, " % position + "%s\n" % duedate + "%s, " %rec_bestellung + "%s, " % rec_position + "%s" % rec_date)
-                        found = True
-                        if record.state == 'new':
-                            record.write({'state': 'wait'})
-                            self.env.cr.commit()
+                    if self.search_count([('bestellung', '=', bestellung),('position', '=', position),('due_date', '=', duedate)]) == 0:
+                        dataset = {
+                                    'bestellung' : bestellung,
+                                    'position' : position,
+                                    'lieferant' : data[zeile][2],
+                                    'art_nr' : data[zeile][3],
+                                    'art_name' : data[zeile][5],
+                                    'due_date' : duedate,
+                                    'menge_bestellt' : data[zeile][7],
+                                    'state' : 'new',
+                                }
+                        new = new + 1
+                        self.env['forecast'].create(dataset)
+                        self.env.cr.commit()
 
-                if found == False and record.state =='wait':
-                    record.write({'state': 'deleted'})
-                    #self.search([('id', '=', record.id)]).write({'state': 'deleted'})
+                records = self.env['forecast'].search([])
+                rec = 0
+
+                for record in records:
+                    rec_bestellung = record.bestellung
+                    rec_position = record.position
+                    rec_date = record.due_date
+                    found = False
+                    rec = rec+1
+                    record.write({'current_date' : fields.datetime.now()})
                     self.env.cr.commit()
-                    deleted = deleted + 1
 
-        #raise UserError(data)           
-        raise UserError("Neu: %s" % new + " Deleted: %s" % deleted + "Recs Walked: %s" %rec)
+                    for zeile in xrange(2, sheet.nrows):
+                        date_float = data[zeile][6]
+                        bestellung = int(data[zeile][0])
+                        position = int(data[zeile][1])
+                        duedate = datetime.datetime(*xlrd.xldate_as_tuple(date_float, wb.datemode)).date()
+
+                        #raise UserError(zeile)
+                        #raise UserError("%s, " % bestellung + "%s, " % position + "%s\n" % duedate + "%s, " %rec_bestellung + "%s, " % rec_position + "%s" % rec_date) 
+                        #if (rec_bestellung == bestellung) and (rec_position == position) and (rec_date == duedate):
+                        if rec_bestellung == str(bestellung) and rec_position == str(position) and rec_date == str(duedate) and self.state !='wait':
+                            #raise UserError("%s, " % bestellung + "%s, " % position + "%s\n" % duedate + "%s, " %rec_bestellung + "%s, " % rec_position + "%s" % rec_date)
+                            found = True
+                            if record.state == 'new':
+                                record.write({'state': 'wait'})
+                                self.env.cr.commit()
+
+                    if found == False and record.state =='wait':
+                        record.write({'state': 'deleted'})
+                        #self.search([('id', '=', record.id)]).write({'state': 'deleted'})
+                        self.env.cr.commit()
+                        deleted = deleted + 1
+
+            #raise UserError(data)           
+            raise UserError("Neu: %s" % new + " Deleted: %s" % deleted + "Recs Walked: %s" %rec)
 
 class Picking(models.Model):
     _inherit = "stock.picking"

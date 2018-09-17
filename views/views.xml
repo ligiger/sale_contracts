@@ -48,7 +48,7 @@
       <field name="name">Forecastliste</field>
       <field name="model">forecast</field>
       <field name="arch" type="xml">
-        <tree>
+        <tree string="Forecast Liste" decoration-danger="state=='deleted'" decoration-success="current_date == creation_date">
           <field name="bestellung"/>
           <field name="position"/>
           <field name="lieferant"/>
@@ -57,6 +57,8 @@
           <field name="due_date"/>
           <field name="menge_bestellt"/>
           <field name="state"/>
+          <field name="creation_date"/>
+          <field name="current_date"/>
         </tree>
       </field>
     </record>
@@ -202,7 +204,36 @@
       </field>
     </record>
     
-
+<record id="forecast_form" model="ir.ui.view">
+      <field name="name">forecast_form</field>
+      <field name="model">forecast</field>
+      <field name="arch" type="xml">
+        <form string="Forecast Element">
+          <header>
+            <field name="state" widget="statusbar" statusbar_visible="new,wait,done,deleted"/>
+          </header>
+          <sheet>
+            <group >
+              <field name="bestellung" attrs="{'readonly': True}"/>
+              <field name="position" attrs="{'readonly': True}"/>
+              <field name="lieferant" attrs="{'readonly': True}"/>
+            </group>
+            <group>
+              <field name="art_nr" attrs="{'readonly': True}"/>
+              <field name="art_name" attrs="{'readonly': True}"/>
+            </group>
+            <group>
+              <field name="due_date" attrs="{'readonly': True}"/>
+              <field name="menge_bestellt" attrs="{'readonly': True}"/>
+              <field name="menge_erhalten" attrs="{'readonly': [('state', '==', 'done')]}"/>  
+            </group>
+            <group>
+              <field name="bemerkungen"/>
+            </group>
+          </sheet>
+        </form>
+      </field>
+    </record>
 
     <!-- actions opening views on models -->
     

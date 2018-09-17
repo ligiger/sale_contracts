@@ -210,12 +210,24 @@ class forecast(models.Model):
     due_date = fields.Date(string="Zieldatum")
     menge_bestellt = fields.Integer(string="Menge Bestellt")
     menge_erhalten = fields.Integer(string="Menge Erhalten (VMS)")
+    current_date = fields.Date(string="Current Time", default= fields.datetime.now())
+    creation_date = fields.Date(string="Creation date", default= fields.datetime.now())
+    bemerkungen = fields.Html(string="Bemerkung")
 
     state = fields.Selection([
+        ('new', 'Neu'),
         ('wait', 'Warteschlange'),
         ('done', 'Abgeschlossen'),
-        ('cancel', 'Abgebrochen'),
+        ('deleted', 'Gelöscht'),
         ], default='wait', track_visibility="onchange")
+
+    @api.multi
+    def write(self, values):
+        if values.get('menge_erhalten') == self.menge_bestellt:
+            #raise UserError("Neu:")
+            values['state'] = 'done'
+
+        return super(forecast, self).write(values)
 
     @api.multi
     def check_updates(self):
@@ -275,6 +287,7 @@ class forecast(models.Model):
                                 'art_name' : data[zeile][5],
                                 'due_date' : duedate,
                                 'menge_bestellt' : data[zeile][7],
+                                'state' : 'new',
                             }
                     new = new + 1
                     self.env['forecast'].create(dataset)
@@ -289,7 +302,8 @@ class forecast(models.Model):
                 rec_date = record.due_date
                 found = False
                 rec = rec+1
-                
+                record.write({'current_date' : fields.datetime.now()})
+                self.env.cr.commit()
 
                 for zeile in xrange(2, sheet.nrows):
                     date_float = data[zeile][6]
@@ -303,9 +317,13 @@ class forecast(models.Model):
                     if rec_bestellung == str(bestellung) and rec_position == str(position) and rec_date == str(duedate) and self.state !='wait':
                         #raise UserError("%s, " % bestellung + "%s, " % position + "%s\n" % duedate + "%s, " %rec_bestellung + "%s, " % rec_position + "%s" % rec_date)
                         found = True
+                        if record.state == 'new':
+                            record.write({'state': 'wait'})
+                            self.env.cr.commit()
 
                 if found == False and record.state =='wait':
-                    self.search([('id', '=', record.id)]).unlink()
+                    record.write({'state': 'deleted'})
+                    #self.search([('id', '=', record.id)]).write({'state': 'deleted'})
                     self.env.cr.commit()
                     deleted = deleted + 1
 

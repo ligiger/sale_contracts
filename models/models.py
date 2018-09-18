@@ -214,7 +214,7 @@ class forecast(models.Model):
     current_date = fields.Date(string="Current Date", default= fields.datetime.now())
     creation_date = fields.Date(string="Creation date", default= fields.datetime.now())
     bemerkungen = fields.Html(string="Bemerkung")
-    days_due = fields.Integer(string="Due Days", readonly = True)
+    days_due = fields.Integer(string="Days Overdue")
 
     state = fields.Selection([
         ('new', 'Neu'),
@@ -231,23 +231,26 @@ class forecast(models.Model):
 
         return super(forecast, self).write(values)
 
-    @api.model
+    @api.multi
     def update_time(self):
         records = self.env['forecast'].search([])
-
+        
+        result=[]
         for record in records:
-            record.write[{'current_date': fields.datetime.now()}]
+            record.write({'current_date' : fields.datetime.now()})
+            self.env.cr.commit()
             chkin_dt = datetime.datetime.strptime(record.due_date, '%Y-%m-%d')
             chkout_dt = datetime.datetime.strptime(record.current_date, '%Y-%m-%d')
-            duedays = chkin_dt - chkout_dt
-            raise UserError(duedays)
-            record.write[{'days_due': duedays}]
+            duedays = chkout_dt - chkin_dt
+            record.write({'days_due' : duedays.days})
+            self.env.cr.commit()
+        return result
 
     @api.multi
     def name_get(self):
         result=[]
         for record in self:
-            name = '%s-%s-%s-%s' % (record.art_name, record.bestellung ,record.position, record.due_date)
+            name = '%s-%s-%s' % (record.bestellung ,record.position, record.due_date)
             result.append((record.id, name))
         return result
 
@@ -344,6 +347,10 @@ class Picking(models.Model):
     _inherit = "stock.picking"
 
     geag_forecast_item = fields.Many2one('forecast', string="Geplante Lieferung")
+    geag_forecast_bestellung = fields.Char (string="Bestellnummer", store=True, related='geag_forecast_item.bestellung', readonly='true')
+    geag_forecast_position = fields.Char(string="Position", store=True, related='geag_forecast_item.position', readonly='true')
+    geag_forecast_lieferant = fields.Char(string="Lieferant", store=True, related='geag_forecast_item.lieferant', readonly='true')
+    geag_forecast_plandatum = fields.Date(string="Plandatum", store=True, related='geag_forecast_item.due_date', readonly='true')
 
     geag_kontrakt = fields.Many2one('kontrakt.kontrakt', string="Mengenkontrakt")
     geag_abruf = fields.Many2one('kontrakt.abruf', string="Abruf")

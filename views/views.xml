@@ -269,7 +269,6 @@
             <field name="code">model.check_updates()</field>
     </record>
 
-     <data noupdate="1">
         <record id="ir_scheduler_forecast_update_time_action" model="ir.cron">
             <field name="name">Time Update in Forecast</field>
             <field name="model_id" ref="model_forecast"/>
@@ -278,10 +277,9 @@
             <field name="interval_type">minutes</field>
             <field name="numbercall">-1</field>
             <field name="doall">false</field>
-            <field name="model">forecast</field>
-            <field name="function">update_time</field>
+            <field name="state">code</field>
+            <field name="code">model.update_times()</field>
         </record>
-   </data>
 
         <menuitem id="menu_updates_fc" parent="lieferforecast_menu_1" action="check_forupdates_server"/>
 
@@ -314,7 +312,6 @@
       <field name="priority" eval="15"/>
       <field name="arch" type="xml">
         <xpath expr="//field[@name='origin']" position="after">
-          <field  name="geag_forecast_item" domain="[('state','=','wait')]" attrs="{'invisible': [('picking_type_code', '!=', 'incoming')]}"/>
           <field  name="geag_kontrakt" domain="[('state','=','confirmed')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
           <field  name="geag_abruf" domain="[('parent_kontrakt', '=', geag_kontrakt),('state','=','active')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
           <field  name="geag_position" domain="[('parent_abruf', '=', geag_abruf),('state','=','active')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
@@ -324,6 +321,15 @@
           <field  name="geag_spediteur"/>
           <field  name="geag_wird_abgeholt"/>
         </xpath>
+        <xpath expr="/form/sheet/group[1]/group[2]" position="after">
+        <group string="Plandaten" attrs="{'invisible': [('picking_type_code', '!=', 'incoming')]}">
+            <field  name="geag_forecast_item" attrs="{'invisible': [('picking_type_code', '!=', 'incoming')]}"/>
+            <field  name="geag_forecast_bestellung" attrs="{'invisible': [('picking_type_code', '!=', 'incoming')]}"/>
+            <field  name="geag_forecast_position" attrs="{'invisible': [('picking_type_code', '!=', 'incoming')]}"/>
+            <field  name="geag_forecast_lieferant" attrs="{'invisible': [('picking_type_code', '!=', 'incoming')]}"/>
+            <field  name="geag_forecast_plandatum" attrs="{'invisible': [('picking_type_code', '!=', 'incoming')]}"/>
+          </group>
+          </xpath>
       </field>
   </record>
 

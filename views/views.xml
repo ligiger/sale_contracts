@@ -57,8 +57,9 @@
           <field name="due_date"/>
           <field name="menge_bestellt"/>
           <field name="state"/>
+          <field name="days_due"/>
           <field name="creation_date" invisible = "1"/>
-          <field name="current_date" invisible = "1"/>
+          <field name="current_date" invisible = "0"/>
         </tree>
       </field>
     </record>
@@ -266,7 +267,21 @@
             <field name="model_id" ref="model_forecast"/>
             <field name="state">code</field>
             <field name="code">model.check_updates()</field>
+    </record>
+
+     <data noupdate="1">
+        <record id="ir_scheduler_forecast_update_time_action" model="ir.cron">
+            <field name="name">Time Update in Forecast</field>
+            <field name="model_id" ref="model_forecast"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">60</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="doall">false</field>
+            <field name="model">forecast</field>
+            <field name="function">update_time</field>
         </record>
+   </data>
 
         <menuitem id="menu_updates_fc" parent="lieferforecast_menu_1" action="check_forupdates_server"/>
 
@@ -299,6 +314,7 @@
       <field name="priority" eval="15"/>
       <field name="arch" type="xml">
         <xpath expr="//field[@name='origin']" position="after">
+          <field  name="geag_forecast_item" domain="[('state','=','wait')]" attrs="{'invisible': [('picking_type_code', '!=', 'incoming')]}"/>
           <field  name="geag_kontrakt" domain="[('state','=','confirmed')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
           <field  name="geag_abruf" domain="[('parent_kontrakt', '=', geag_kontrakt),('state','=','active')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
           <field  name="geag_position" domain="[('parent_abruf', '=', geag_abruf),('state','=','active')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>

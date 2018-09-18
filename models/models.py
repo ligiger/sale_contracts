@@ -12,7 +12,7 @@ from xlrd import open_workbook
 import os
 from os.path import join, dirname, abspath
 import datetime
-from xml.dom import minidom
+import shutil
 
 # Definition von Mengenkontrakt -----------------------------
 class kontrakt_kontrakt(models.Model):
@@ -211,9 +211,10 @@ class forecast(models.Model):
     due_date = fields.Date(string="Zieldatum")
     menge_bestellt = fields.Integer(string="Menge Bestellt")
     menge_erhalten = fields.Integer(string="Menge Erhalten (VMS)")
-    current_date = fields.Date(string="Current Time", default= fields.datetime.now())
+    current_date = fields.Date(string="Current Date", default= fields.datetime.now())
     creation_date = fields.Date(string="Creation date", default= fields.datetime.now())
     bemerkungen = fields.Html(string="Bemerkung")
+    days_due = fields.Integer(string="Due Days", readonly = True)
 
     state = fields.Selection([
         ('new', 'Neu'),
@@ -230,6 +231,26 @@ class forecast(models.Model):
 
         return super(forecast, self).write(values)
 
+    @api.model
+    def update_time(self):
+        records = self.env['forecast'].search([])
+
+        for record in records:
+            record.write[{'current_date': fields.datetime.now()}]
+            chkin_dt = datetime.datetime.strptime(record.due_date, '%Y-%m-%d')
+            chkout_dt = datetime.datetime.strptime(record.current_date, '%Y-%m-%d')
+            duedays = chkin_dt - chkout_dt
+            raise UserError(duedays)
+            record.write[{'days_due': duedays}]
+
+    @api.multi
+    def name_get(self):
+        result=[]
+        for record in self:
+            name = '%s-%s-%s-%s' % (record.art_name, record.bestellung ,record.position, record.due_date)
+            result.append((record.id, name))
+        return result
+
     @api.multi
     def check_updates(self):
         #it is meta object of ir.attachment
@@ -238,12 +259,15 @@ class forecast(models.Model):
         #data_file = b64decode(f.attachment_id.datas)
         #raise exceptions.ValidationError("Error! Panel")
         #filepath = r'C:\Users\Admin\Desktop\Terminliste\Kopie_LGI.xlsx'
-        a_dir = r'C:\Users\Admin\Desktop\Terminliste'
+        a_dir = r'C:\Users\Admin\Desktop\Terminliste\neu'
+        dest_folder = r'C:\Users\Admin\Desktop\Terminliste\done'
         new = 0
         deleted = 0
+        rec = 0
 
         for filename in os.listdir(a_dir):
-            filepath = minidom.parse(a_dir + '/' + filename)
+            filepath = os.path.join(a_dir, filename)
+            dest_path = os.path.join(dest_folder, filename)
 
             wb = open_workbook(filepath)
             #sheet = wb.sheet_by_index(1)
@@ -311,11 +335,15 @@ class forecast(models.Model):
                         self.env.cr.commit()
                         deleted = deleted + 1
 
-            #raise UserError(data)           
-            raise UserError("Neu: %s" % new + " Deleted: %s" % deleted + "Recs Walked: %s" %rec)
+            wb.release_resources()
+            shutil.move(filepath, dest_path)  
+
+        raise UserError("Neu: %s" % new + " Deleted: %s" % deleted + "Recs Walked: %s" %rec)
 
 class Picking(models.Model):
     _inherit = "stock.picking"
+
+    geag_forecast_item = fields.Many2one('forecast', string="Geplante Lieferung")
 
     geag_kontrakt = fields.Many2one('kontrakt.kontrakt', string="Mengenkontrakt")
     geag_abruf = fields.Many2one('kontrakt.abruf', string="Abruf")

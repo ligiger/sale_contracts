@@ -126,6 +126,7 @@ class kontrakt_abruf(models.Model):
 
     amount_ordered = fields.Integer('Bestellte Menge', required="true", track_visibility="onchange")
     amount_delivered = fields.Integer('Gelieferte Menge', readonly="true")
+    
 
     #positionen = fields.Many2many('kontrakt.position', 'kontrakt_position_rel', 'kontrakt_abruf_id', 'kontrakt_position_id', string='Abrufpositionen', copy=False, track_visibility='onchange')
     positionen = fields.One2many('kontrakt.position', 'parent_abruf', string="Abrufpositionen", copy=False, track_visibility='onchange')
@@ -157,20 +158,24 @@ class kontrakt_position(models.Model):
     def edit(self):
         self.write({'state': 'draft'})
     
+    # work to do here!!
     @api.onchange('amount_done')
-    def on_change_amount_done(self):
-        for record in self:
-            if record.amount_done == record.amount_planned and record.state== 'active':
-                record.state = 'done'
-                record.amount_done = record.amount_planned
-            #print self.state
+    def close_item(self, values):
+        done = values.get('amount_done')
+        if self.state != 'draft' and self.amount_planned == self.amount_done:  
+            self.state = 'done'
+            raise UserError(done)
+            self.amount_done = self.def_delivered
+                #record.state = 'done'
+
 
     name = fields.Char()
     create_date = fields.Datetime('Erstelldatum', default=fields.Datetime.now, readonly="true")
     created_by = fields.Many2one('res.users', string="Erstellt durch", default=lambda self: self.env.user, readonly="true")
     delivery_date = fields.Date('Lieferdatum:', required="true", track_visibility="onchange")
     amount_planned = fields.Integer('Geplante Menge', required="true", track_visibility="onchange")
-    amount_done = fields.Integer('Belieferte Menge', track_visibility="onchange", store=True)
+    amount_done = fields.Integer('Belieferte Menge', track_visibility="onchange")
+    def_delivered = fields.Integer('Gelieferte Menge', readonly="true", store= True, track_visibility="onchange")
 
 
     parent_abruf = fields.Many2one('kontrakt.abruf', string="Abruf", index=True, store=True, readonly="true")
@@ -359,6 +364,11 @@ class Picking(models.Model):
     geag_spediteur = fields.Many2one('spediteur', string="Spedition")
     geag_wird_abgeholt = fields.Boolean(string="Wird abgeholt", related='geag_spediteur.abholung', readonly='true')
 
+    geag_typ = fields.Selection([
+        ('std', 'VMS Standard'),
+        ('special', 'Allgemein'),
+        ], string="Auftragstyp", default='std', track_visibility="onchange")
+
 class MrpProduction(models.Model):
     _inherit = 'mrp.production'
 
@@ -366,43 +376,29 @@ class MrpProduction(models.Model):
     geag_abruf = fields.Many2one('kontrakt.abruf', string="Abruf")
     geag_position = fields.Many2one('kontrakt.position', string="Position")
     geag_delivery_date = fields.Date(string="Lieferdatum", store=True, related='geag_position.delivery_date', readonly='true') 
-'''
+
+
+class SaleOrder(models.Model):
+    _inherit = 'sale.order'
+
+    checked_date = fields.Datetime('Geprüft am', readonly = True)
+    checked_by = fields.Many2one('res.users', string="Geprüft durch", readonly = True)
+    spec_notes = fields.Text('Spezielle Bedingungen')
+
+    @api.one
+    def validate(self):
+        self.write({'checked_date': fields.Datetime.now()})
+        self.write({'checked_by': self.env['res.users'].browse(self.env.uid).id})
+
     @api.multi
-    def write(self, vals):
-        res = super(MrpProduction, self).write(vals) # Save the form
-        stage_followers = self.env['mymodule.stage_followers'].search([('stage', '=', self.state)])
-        anz = 0
-        for i in stage_followers:
-            #self.add_follower_id(self, 'kontrakt.abruf', i['user'])
-            reg = {
-                'res_id': self.id,
-                'res_model': 'mrp.production',
-                'partner_id': i['user'].id
-            }
-            try:
-                follower_id = self.env['mail.followers'].create(reg)
-                raise UserError('OK')
-            except:
-                # This partner is already following this record
-            #    raise UserError('FAIL')
-                return False
-            anz = anz + 1
-        # Message posting is optional. Add_follower_id will still make the partner follow the record
-        #raise UserError(anz)
-        messages = "Whatever you want to put in the message box."
-        if messages:
-            self.message_post(body=messages, partner_ids=self.message_follower_ids)
-        return res
-'''
-'''
-class stage_followers(models.Model):
-    _name = 'mymodule.stage_followers'
-    user = fields.Many2one('res.partner', required=True, string='User')
-    beschreibung = fields.Char("Beschreibung")
-    stage = fields.Selection(selection=[('draft', 'Entwurf'),
-        ('active', 'Aktiv'),
-        ('confirmed','Bestätigt'),
-        ('done', 'Abgeschlossen'),
-        ('cancel', 'Abgebrochen'),
-        ], default='initial', string='Stage')
-'''
+    def sales_number_update(self):
+        #sequence_obj = self.pool.get('ir.sequence')
+        seq_id = self.env['ir.sequence'].search([('code', '=', 'sale.order')])         
+        if seq_id:
+            seq_id.write({'number_next': 1})
+        return None
+
+class SaleOrderLine(models.Model):
+    _inherit = 'sale.order.line'
+
+    geag_pos = fields.Integer('Position')

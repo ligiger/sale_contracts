@@ -193,7 +193,8 @@
             <group>
               <field name="delivery_date" attrs="{'readonly':[('state','!=','draft')]}"/>
               <field name="amount_planned" attrs="{'readonly':[('state','!=','draft')]}"/>
-              <field name="amount_done" attrs="{'readonly':[('state','=','done')]}"/>  
+              <field name="amount_done" attrs="{'readonly':[('state','=','draft')], 'invisible': [('state','=','done')]}"/>
+              <field name="def_delivered" attrs="{'readonly':[('state','!=','draft')], 'invisible': [('state','!=','done')]}"/>
             </group>
           </sheet>
           <div class="oe_chatter">
@@ -311,25 +312,24 @@
       <field name="inherit_id" ref="stock.view_picking_form"/>
       <field name="priority" eval="15"/>
       <field name="arch" type="xml">
-        <xpath expr="//field[@name='origin']" position="after">
-          <field  name="geag_kontrakt" domain="[('state','=','confirmed')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
-          <field  name="geag_abruf" domain="[('parent_kontrakt', '=', geag_kontrakt),('state','=','active')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
-          <field  name="geag_position" domain="[('parent_abruf', '=', geag_abruf),('state','=','active')]" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
-          <field  name="geag_delivery_date" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
+        <xpath expr="//field[@name='origin']" position="replace">
+          <field  name="geag_typ"/>
+          <field  name="origin" attrs="{'invisible': [('geag_typ', '=', 'std')]}"/>
+          <field  name="geag_kontrakt" domain="[('state','=','confirmed')]" attrs="{'invisible': ['|','|',('picking_type_code', '!=', 'outgoing'),('geag_typ', '!=', 'std')]}"/>
+          <field  name="geag_abruf" domain="[('parent_kontrakt', '=', geag_kontrakt),('state','=','active')]" attrs="{'invisible': ['|','|',('picking_type_code', '!=', 'outgoing'),('geag_typ', '!=', 'std')]}"/>
+          <field  name="geag_position" domain="[('parent_abruf', '=', geag_abruf),('state','=','active')]" attrs="{'invisible': ['|','|',('picking_type_code', '!=', 'outgoing'),('geag_typ', '!=', 'std')]}"/>
+          <field  name="geag_delivery_date" attrs="{'invisible': ['|','|',('picking_type_code', '!=', 'outgoing'),('geag_typ', '!=', 'std')]}"/>
+          
+          <field  name="geag_forecast_item" attrs="{'invisible': ['|','|',('picking_type_code', '!=', 'incoming'),('geag_typ', '!=', 'std')]}"/>
+          <field  name="geag_forecast_bestellung" attrs="{'invisible': ['|','|',('picking_type_code', '!=', 'incoming'),('geag_typ', '!=', 'std')]}"/>
+          <field  name="geag_forecast_position" attrs="{'invisible': ['|','|',('picking_type_code', '!=', 'incoming'),('geag_typ', '!=', 'std')]}"/>
+          <field  name="geag_forecast_lieferant" attrs="{'invisible': ['|','|',('picking_type_code', '!=', 'incoming'),('geag_typ', '!=', 'std')]}"/>
+          <field  name="geag_forecast_plandatum" attrs="{'invisible': ['|','|',('picking_type_code', '!=', 'incoming'),('geag_typ', '!=', 'std')]}"/>
         </xpath>
         <xpath expr="//field[@name='move_type']" position="after">
-          <field  name="geag_spediteur"/>
-          <field  name="geag_wird_abgeholt"/>
+          <field  name="geag_spediteur" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
+          <field  name="geag_wird_abgeholt" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
         </xpath>
-        <xpath expr="/form/sheet/group[1]/group[2]" position="after">
-        <group string="Plandaten" attrs="{'invisible': [('picking_type_code', '!=', 'incoming')]}">
-            <field  name="geag_forecast_item" attrs="{'invisible': [('picking_type_code', '!=', 'incoming')]}"/>
-            <field  name="geag_forecast_bestellung" attrs="{'invisible': [('picking_type_code', '!=', 'incoming')]}"/>
-            <field  name="geag_forecast_position" attrs="{'invisible': [('picking_type_code', '!=', 'incoming')]}"/>
-            <field  name="geag_forecast_lieferant" attrs="{'invisible': [('picking_type_code', '!=', 'incoming')]}"/>
-            <field  name="geag_forecast_plandatum" attrs="{'invisible': [('picking_type_code', '!=', 'incoming')]}"/>
-          </group>
-          </xpath>
       </field>
   </record>
 
@@ -363,36 +363,47 @@
         </xpath>
       </field>
   </record>
-<!-->
-<record model="ir.ui.view" id="settings_sfollowers_form">
-  <field name="name">mymodule.settings_sfollowers.form</field>
-  <field name="model">mymodule.stage_followers</field>
-  <field name="arch" type="xml">
-    <form>
-      <field name="user" />
-      <field name="stage" />
-    </form>
-  </field>
-</record>
-<record model="ir.ui.view" id="settings_sfollowers_list">
-  <field name="name">mymodule.settings_sfollowers.list</field>
-  <field name="model">mymodule.stage_followers</field>
-  <field name="arch" type="xml">
-    <tree>
-      <field name="user" />
-      <field name="stage" />
-    </tree>
-  </field>
-</record>
-<record model="ir.actions.act_window" id="action_view_sfollowers_settings">
-  <field name="name">MyModule Settings - Stage Followers</field>
-  <field name="res_model">mymodule.stage_followers</field>
-  <field name="view_mode">tree,form</field>
-</record>
-<menuitem name="Stage Followers"  
-  id="menu_settings_sfollowers" 
-  action="action_view_sfollowers_settings" />
-  -->
+
+  <!-- inherit sale order form view -->
+  <record model="ir.ui.view" id="sale_oder_form_inherited">
+      <field name="name">Sale Order</field>
+      <field name="model">sale.order</field>
+      <field name="inherit_id" ref="sale.view_order_form"/>
+      <field name="priority" eval="15"/>
+      <field name="arch" type="xml">
+        <!--<xpath expr="//field[@name='analytic_account_id']" position="after">-->
+        <xpath expr="//page[2]" position="after">
+          <page string = "Dokumentenprüfung">
+            <button name="validate" string="Validieren" type="object" states="draft" class="btn-primary" groups="q_note.group_validator"/>
+            <group>
+              <field  name="checked_date"/>
+              <field  name="checked_by"/>
+            </group>
+          </page>
+        </xpath>
+        <xpath expr="/form/sheet/notebook/page/field/tree/field[@name='product_id']" position="before">
+              <field  name="geag_pos"/>
+        </xpath>
+        <xpath expr="//field[@name='note']" position="replace">
+        <group>
+          <field  name="note" string="Allgemeine Bedingungen"/>
+          <field  name="spec_notes" string="Spezielle Bedingungen"/>
+        </group>
+        </xpath>
+      </field>
+  </record>
+<!--
+<record model="ir.ui.view" id="sale_oder_line_tree_inherited">
+      <field name="name">Sale Order Line</field>
+      <field name="model">sale.order.line</field>
+      <field name="inherit_id" ref="sale.view_order_line_tree"/>
+      <field name="priority" eval="15"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='product_id']" position="before">
+              <field  name="geag_pos"/>
+        </xpath>
+      </field>
+  </record>-->
   </data>
 
 </odoo>

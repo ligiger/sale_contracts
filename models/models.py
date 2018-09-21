@@ -159,13 +159,21 @@ class kontrakt_position(models.Model):
         self.write({'state': 'draft'})
     
     # work to do here!!
-    @api.onchange('amount_done')
-    def close_item(self, values):
-        done = values.get('amount_done')
-        if self.state != 'draft' and self.amount_planned == self.amount_done:  
-            self.state = 'done'
-            raise UserError(done)
-            self.amount_done = self.def_delivered
+    @api.multi
+    def write(self, values):
+        if values.get('amount_done') == self.amount_planned and self.state != 'draft':
+            #raise UserError("Neu:")
+            values['state'] = 'done'
+
+        return super(kontrakt_position, self).write(values)
+
+    #@api.onchange('amount_done')
+    #def close_item(self, values):
+    #    done = values.get('amount_done')
+    #    if self.state != 'draft' and self.amount_planned == self.amount_done:  
+    #        self.state = 'done'
+    #        raise UserError(done)
+    #        self.amount_done = self.def_delivered
                 #record.state = 'done'
 
 

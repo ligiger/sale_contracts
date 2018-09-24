@@ -193,8 +193,7 @@
             <group>
               <field name="delivery_date" attrs="{'readonly':[('state','!=','draft')]}"/>
               <field name="amount_planned" attrs="{'readonly':[('state','!=','draft')]}"/>
-              <field name="amount_done" attrs="{'readonly':[('state','=','draft')], 'invisible': [('state','=','done')]}"/>
-              <field name="def_delivered" attrs="{'readonly':[('state','!=','draft')], 'invisible': [('state','!=','done')]}"/>
+              <field name="amount_done" attrs="{'readonly':[('state','!=','active')]}"/>
             </group>
           </sheet>
           <div class="oe_chatter">
@@ -282,7 +281,7 @@
             <field name="code">model.update_times()</field>
         </record>
 
-        <menuitem id="menu_updates_fc" parent="lieferforecast_menu_1" action="check_forupdates_server"/>
+        
 
     <!-- Top menu item -->
     
@@ -293,7 +292,8 @@
     <menuitem name="Kontrakte" id="kontrakt_kontrakt_menu_1" parent="kontrakt_kontrakt_menu_root"/>
     <menuitem name="Lieferforecast" id="lieferforecast_menu_1" parent="kontrakt_kontrakt_menu_root"/>
     <!-- actions -->
-    
+    <menuitem id="menu_updates_fc" parent="lieferforecast_menu_1" 
+              action="check_forupdates_server"/>
     <menuitem name="Kontrakte" id="kontrakt_kontrakt_kontrakte" parent="kontrakt_kontrakt_menu_1"
               action="kontrakt_kontrakt_action_window"/>
     <menuitem name="Abrufe" id="kontrakt_kontrakt_abrufe" parent="kontrakt_kontrakt_menu_1"

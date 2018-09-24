@@ -353,7 +353,7 @@ class forecast(models.Model):
 
             wb.release_resources()
             shutil.move(filepath, dest_path)  
-
+        self.update_time()
         raise UserError("Neu: %s" % new + " Deleted: %s" % deleted + "Recs Walked: %s" %rec)
 
 class Picking(models.Model):
@@ -383,7 +383,9 @@ class MrpProduction(models.Model):
     geag_kontrakt = fields.Many2one('kontrakt.kontrakt', string="Mengenkontrakt")
     geag_abruf = fields.Many2one('kontrakt.abruf', string="Abruf")
     geag_position = fields.Many2one('kontrakt.position', string="Position")
-    geag_delivery_date = fields.Date(string="Lieferdatum", store=True, related='geag_position.delivery_date', readonly='true') 
+    geag_delivery_date = fields.Date(string="Lieferdatum", store=True, related='geag_position.delivery_date', readonly='true')
+
+    product_dmr = fields.Many2one('dmr', string="Device Master Record", required=True)
 
 
 class SaleOrder(models.Model):
@@ -410,3 +412,69 @@ class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
     geag_pos = fields.Integer('Position')
+
+class DeviceMasterRecord(models.Model):
+    """Device Master Records"""
+    _name = "dmr"
+
+    name = fields.Char(string="Name")
+    version = fields.Char(string="Version")
+
+    date_create = fields.Datetime('Erstelldatum', readonly=True)
+    created_by = fields.Many2one('res.users', string="Erstellt durch", readonly="true")
+    
+    date_validiert = fields.Datetime('Validiert am:', readonly="true")
+    validiert_by = fields.Many2one('res.users', string="Validiert durch", readonly="true")
+
+    product_id = fields.Many2one('product.product', string="Produkt", required="true", index=True, store=True)
+
+    #dokumente = fields.One2many('ir.attachment', 'res_model', string="Mitgeltende Dokumente", copy=True, track_visibility='onchange')
+    dokumente = fields.Many2many('ir.attachment', 'dmr_document_rel', 'dmr_id', 'ir_attachment_id', string='Mitgeltende Dokumente', copy=True, track_visibility='onchange')
+
+    
+    state = fields.Selection([
+        ('draft', 'Entwurf'),
+        ('erstellt', 'Erstellt'),
+        ('valid', 'Validiert'),
+        ('cancel', 'Obsolet'),
+        ], default='draft', track_visibility="onchange")
+
+    @api.one
+    def confirm(self):
+        self.write({'state': 'erstellt'})
+        self.write({'date_create': fields.Datetime.now()})
+        self.write({'created_by': self.env['res.users'].browse(self.env.uid).id})
+
+    @api.one
+    def validate(self):
+        self.write({'state': 'valid'})
+        self.write({'date_validiert': fields.Datetime.now()})
+        self.write({'validiert_by': self.env['res.users'].browse(self.env.uid).id})
+
+    @api.multi
+    def name_get(self):
+        result=[]
+        for record in self:
+            name = '[%s] - %s' % (record.version ,record.name)
+            result.append((record.id, name))
+        return result
+
+class DMRDocument(models.Model):
+    """Device Master Record Document"""
+    _name = "dmr.document"
+
+    name = fields.Char(string="Name")
+    version = fields.Char(string="Version")
+    product_id = fields.Many2one('product.product', string="Produkt", required="true", index=True, store=True)
+    document = fields.Binary(string="Document")
+
+class IrAttachment(models.Model):
+
+    _inherit = 'ir.attachment'
+
+    version = fields.Char(string="Version")
+    #product_id = fields.Many2one('product.product', string="Produkt", required="true", index=True, store=True)
+    product_id = fields.Many2many('product.product', 'attachment_product_rel', 'attachment_id', 'product_id', string='Relevante Produkte', copy=True)
+    geag_sequence = fields.Integer()
+
+

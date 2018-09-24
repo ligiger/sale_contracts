@@ -9,3 +9,5 @@ access_spedition_manager,Spedition Manager,model_spediteur,group_contracts_manag
 access_spedition_user,Spedition User,model_spediteur,group_contracts_user,1,1,1,0
 access_forecast_manager,Forecast Manager,model_forecast,group_contracts_manager,1,1,1,1
 access_forecast_user,Forecast User,model_forecast,group_contracts_user,1,0,0,0
+access_dmr_user,DMR User,model_dmr,group_contracts_user,1,0,0,0
+access_dmr_manager,DMR Manager,model_dmr,group_contracts_manager,1,1,1,1

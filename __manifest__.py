@@ -36,7 +36,7 @@
     'demo': [
         'demo/demo.xml',
     ],
-    'uninstall_hook': "uninstall_hook",
+    #'uninstall_hook': "uninstall_hook",
     'installable': True,
     'auto_install': False,
 }

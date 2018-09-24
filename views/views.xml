@@ -64,6 +64,80 @@
       </field>
     </record>
 
+    <record model="ir.ui.view" id="dmr_view_tree">
+      <field name="name">Device Master Record</field>
+      <field name="model">dmr</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="version"/>
+          <field name="state"/>
+          <field name="product_id"/>
+        </tree>
+      </field>
+    </record>
+
+    <!-- DMR Form -->
+    <record model="ir.ui.view" id="dmr_view_form">
+      <field name="name">Device Master Record</field>
+      <field name="model">dmr</field>
+      <field name="arch" type="xml">
+        <form>
+          <header>
+            <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
+            <button name="validate" string="Validieren" type="object" states="erstellt" class="btn-primary" groups="q_note.group_validator"/>
+            <field name="state" widget="statusbar" statusbar_visible="draft,erstellt,valid,cancel"/>
+          </header>
+          <sheet>
+            <h1><field name="name"/></h1>
+            <group>
+              <field name="version"/>
+              <field name="product_id"/>
+            </group>
+            <group>
+              <field name="dokumente" mode="tree,form" domain="[('product_id', '=', product_id)]">
+                <tree>
+                  <field name="geag_sequence" widget="handle"/>
+                  <field name="name"/>
+                  <field name="version"/>
+                  <field name="datas_fname"/>
+                </tree>
+                <form>
+                  <sheet>
+                    <group>
+                      <field name="name"/>
+                      <field name="version"/>
+                      <field name="type"/>
+                      <field name="datas" filename="datas_fname" attrs="{'invisible':[('type','=','url')]}"/>
+                      <field name="datas_fname" invisible="1" attrs="{'invisible':[('type','=','url')]}" class="oe_inline oe_right"/>
+                    </group>
+                    <group>
+                    <field name="product_id">
+                      <tree>
+                        <field name="name"/>
+                        <field name="default_code"/>
+                      </tree>
+                    </field>
+                    </group>
+                  </sheet>
+                </form>          
+              </field>
+            </group>
+            <group>
+              <group>
+                <field name="created_by"/>
+                <field name="date_create"/>
+              </group>
+              <group>
+                <field name="validiert_by"/>
+                <field name="date_validiert"/>
+              </group>
+            </group>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
     <!-- Kontrakt Form -->
     <record id="kontrakt_kontrakt_form" model="ir.ui.view">
       <field name="name">Formular Kontrakte</field>
@@ -205,7 +279,7 @@
       </field>
     </record>
     
-<record id="forecast_form" model="ir.ui.view">
+    <record id="forecast_form" model="ir.ui.view">
       <field name="name">forecast_form</field>
       <field name="model">forecast</field>
       <field name="arch" type="xml">
@@ -262,6 +336,12 @@
       <field name="view_mode">tree,form</field>
     </record>
 
+    <record model="ir.actions.act_window" id="dmr_action_window">
+      <field name="name">Device Master Record</field>
+      <field name="res_model">dmr</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
     <record model="ir.actions.server" id="check_forupdates_server">
             <field name="name">Check For Updates Action</field>
             <field name="model_id" ref="model_forecast"/>
@@ -302,6 +382,9 @@
               action="kontrakt_position_action_window"/>
     <menuitem name="Liste" id="lieferforecast_action_item" parent="lieferforecast_menu_1"
               action="forecast_action_window"/>
+    <menuitem name="Device Master Record" id="dmr_action_item" parent="mrp.menu_mrp_bom"
+              action="dmr_action_window"/>
+
 
   <!-- inherited views-->
 
@@ -341,6 +424,7 @@
       <field name="priority" eval="15"/>
       <field name="arch" type="xml">
         <xpath expr="//field[@name='origin']" position="after">
+          <field  name="product_dmr" domain="[('state','=','valid'),('product_id','=', product_id)]" attrs="{'readonly': [('state', '!=', 'confirmed')]}"/>
           <field  name="geag_kontrakt" domain="[('state','=','confirmed'),('product_id','=', product_id)]" attrs="{'readonly': [('state', '!=', 'confirmed')]}"/>
           <field  name="geag_abruf" domain="[('parent_kontrakt', '=', geag_kontrakt),('state','=','active')]" attrs="{'readonly': [('state', '!=', 'confirmed')]}"/>
           <field  name="geag_position" domain="[('parent_abruf', '=', geag_abruf),('state','=','active')]" attrs="{'readonly': [('state', '!=', 'confirmed')]}"/>

@@ -275,6 +275,8 @@ class forecast(models.Model):
         #data_file = b64decode(f.attachment_id.datas)
         #raise exceptions.ValidationError("Error! Panel")
         #filepath = r'C:\Users\Admin\Desktop\Terminliste\Kopie_LGI.xlsx'
+        #a_dir = r'O:\B10. Prozessdaten\B_Kernprozesse\3_Auftragsplanung\VMS Lieferforecast\Terminliste\neu'
+        #dest_folder = r'O:\B10. Prozessdaten\B_Kernprozesse\3_Auftragsplanung\VMS Lieferforecast\Terminliste\done'
         a_dir = r'C:\Users\Admin\Desktop\Terminliste\neu'
         dest_folder = r'C:\Users\Admin\Desktop\Terminliste\done'
         new = 0

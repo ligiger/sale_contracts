@@ -85,6 +85,7 @@
         <form>
           <header>
             <button name="confirm" string="Bestätigen" type="object" states="draft" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
+            <button name="obsolete" string="Obsolet setzen" type="object" states="valid" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
             <button name="validate" string="Validieren" type="object" states="erstellt" class="btn-primary" groups="q_note.group_validator"/>
             <field name="state" widget="statusbar" statusbar_visible="draft,erstellt,valid,cancel"/>
           </header>
@@ -131,6 +132,10 @@
               <group>
                 <field name="validiert_by"/>
                 <field name="date_validiert"/>
+              </group>
+              <group>
+                <field name="obsolete_by"/>
+                <field name="date_obsolete"/>
               </group>
             </group>
           </sheet>

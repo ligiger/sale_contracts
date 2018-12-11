@@ -428,6 +428,9 @@ class DeviceMasterRecord(models.Model):
     date_validiert = fields.Datetime('Validiert am:', readonly="true")
     validiert_by = fields.Many2one('res.users', string="Validiert durch", readonly="true")
 
+    date_obsolete = fields.Datetime('Obsolet am:', readonly="true")
+    obsolete_by = fields.Many2one('res.users', string="Obsolidiert durch", readonly="true")
+
     product_id = fields.Many2one('product.product', string="Produkt", required="true", index=True, store=True)
 
     #dokumente = fields.One2many('ir.attachment', 'res_model', string="Mitgeltende Dokumente", copy=True, track_visibility='onchange')
@@ -452,7 +455,13 @@ class DeviceMasterRecord(models.Model):
         self.write({'state': 'valid'})
         self.write({'date_validiert': fields.Datetime.now()})
         self.write({'validiert_by': self.env['res.users'].browse(self.env.uid).id})
-
+    
+    @api.one
+    def obsolete(self):
+        self.write({'state': 'cancel'})
+        self.write({'date_obsolete': fields.Datetime.now()})
+        self.write({'obsolete_by': self.env['res.users'].browse(self.env.uid).id})
+    
     @api.multi
     def name_get(self):
         result=[]

@@ -156,7 +156,7 @@
             <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done,cancel"/>
           </header>
           <sheet>
-            <h1><field name="name" attrs="{'readonly':[('state','!=','draft')]}"/></h1>
+            <h1>Mengenkontrakt <field name="name" attrs="{'readonly':[('state','!=','draft')]}"/></h1>
             <group>
               <group>
                 <field name="date_create"/>
@@ -174,6 +174,7 @@
               <field name="amount_ordered" attrs="{'readonly':[('state','!=','draft')]}"/>
               <field name="amount_delivered"/>
             </group>
+            <button name="refresh" string="Aktualisieren" type="object" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
             <group>
               <field name="abrufe" string="Abrufe" 
               domain="[('kontrakt_product_id', '=', product_id),('parent_kontrakt', '=', id)]" 
@@ -183,6 +184,9 @@
                 <tree>
                   <field name="name" string="Abruf"/>
                   <field name="kontrakt_product_id"/>
+                  <field name = "amount_ordered"/>
+                  <field name = "amount_delivered"/>
+                  <field name = "state"/>
                 </tree>
               </field>
             </group>
@@ -209,8 +213,8 @@
             <field name="state" widget="statusbar" statusbar_visible="draft,active,done,cancel"/>
           </header>
           <sheet>
+          <h1>Abruf <field name="name" attrs="{'readonly':[('state','!=','draft')]}"/></h1>
             <group>
-              <field name="name" attrs="{'readonly':[('state','!=','draft')]}"/>
               <field name="create_date" attrs="{'readonly':[('state','!=','draft')]}"/>
               <field name="created_by"/>
             </group>
@@ -222,6 +226,7 @@
               <field name="amount_ordered" attrs="{'readonly':[('state','!=','draft')]}"/>
               <field name="amount_delivered"/>
             </group>
+            <button name="refresh" string="Aktualisieren" type="object" class="btn-primary" groups="sale_contracts.group_contracts_manager"/>
             <group>
               <field name="positionen" string="Positionen" 
               domain="[('abruf_product_id', '=', kontrakt_product_id)]" 
@@ -260,7 +265,7 @@
             <field name="state" widget="statusbar" statusbar_visible="draft,active,done,cancel"/>
           </header>
           <sheet>
-            <h1><field name="name" attrs="{'readonly':[('state','!=','draft')]}"/></h1>
+            <h1>Position <field name="name" attrs="{'readonly':[('state','!=','draft')]}"/></h1>
             <group >
               <field name="create_date"/>
               <field name="created_by"/>

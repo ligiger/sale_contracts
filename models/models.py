@@ -67,6 +67,13 @@ class kontrakt_kontrakt(models.Model):
     def edit(self):
         self.write({'state': 'draft'})
 
+    @api.one
+    def refresh(self):
+        zahl = 0
+        for position in self.abrufe:
+            zahl = zahl + position.amount_delivered
+        self.write({'amount_delivered': zahl})
+
 # Definition von Abruf ------------------------------
 class kontrakt_abruf(models.Model):
     """ Kontrakt Abrufe """
@@ -85,6 +92,22 @@ class kontrakt_abruf(models.Model):
     @api.one
     def edit(self):
         self.write({'state': 'draft'})
+
+    #new task 12.12.2018
+    @api.one
+    def refresh(self):
+        zahl = 0
+        for position in self.positionen:
+            zahl = zahl + position.amount_done
+        self.write({'amount_delivered': zahl})
+
+    @api.multi
+    def write(self, values):
+        if values.get('amount_delivered') == self.amount_ordered and self.state != 'draft':
+            #raise UserError("Neu:")
+            values['state'] = 'done'
+
+        return super(kontrakt_abruf, self).write(values)
 
     def add_follower_id(self, res_id, model, partner_id):
         follower_id = False

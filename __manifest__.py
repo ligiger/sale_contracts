@@ -31,6 +31,7 @@
         'security/ir.model.access.csv',
         'report/geag_delivery_slip.xml',
         'report/geag_angebot.xml',
+        'report/core_layouts.xml',
         #'report/sale_contract_reports.xml',
         #'report/lot_label_template.xml',
     ],

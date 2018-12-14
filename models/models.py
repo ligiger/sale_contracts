@@ -397,6 +397,10 @@ class Picking(models.Model):
     geag_spediteur = fields.Many2one('spediteur', string="Spedition")
     geag_wird_abgeholt = fields.Boolean(string="Wird abgeholt", related='geag_spediteur.abholung', readonly='true')
 
+    geag_migo_nr = fields.Char(string="Migo Nummer")
+    geag_sap_ok = fields.Boolean(string="SAP gebucht")
+    geag_operator = fields.Many2one('res.users', string="Sachbearbeiter", default=lambda self: self.env.user)
+
     geag_typ = fields.Selection([
         ('std', 'VMS Standard'),
         ('special', 'Allgemein'),

@@ -418,6 +418,9 @@
           <field  name="geag_forecast_position" attrs="{'invisible': ['|','|',('picking_type_code', '!=', 'incoming'),('geag_typ', '!=', 'std')]}"/>
           <field  name="geag_forecast_lieferant" attrs="{'invisible': ['|','|',('picking_type_code', '!=', 'incoming'),('geag_typ', '!=', 'std')]}"/>
           <field  name="geag_forecast_plandatum" attrs="{'invisible': ['|','|',('picking_type_code', '!=', 'incoming'),('geag_typ', '!=', 'std')]}"/>
+          <field  name="geag_migo_nr" attrs="{'invisible': ['|','|',('picking_type_code', '!=', 'incoming'),('geag_typ', '!=', 'std')]}"/>
+          <field  name="geag_sap_ok" attrs="{'invisible': ['|','|',('picking_type_code', '!=', 'incoming'),('geag_typ', '!=', 'std')]}"/>
+          <field  name="geag_operator"/>
         </xpath>
         <xpath expr="//field[@name='move_type']" position="after">
           <field  name="geag_spediteur" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>

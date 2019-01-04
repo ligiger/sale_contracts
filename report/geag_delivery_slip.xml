@@ -4,57 +4,73 @@
         <t t-call="web.html_container">
             <t t-call="web.external_layout">
                 <t t-set="o" t-value="o.with_context({'lang':o.partner_id.lang})" />
-                <div class="page" style="font-size: 11pt; font-family:Arial">
+                <div class="page" style="font-size: 11pt; font-family: Calibri">
                     <div class="row" name="customer_address">
                         <div class="col-xs-4 pull-right">
                             <div>
-                                <span><strong>Customer (OWN) Address:</strong></span>
+                                <span t-if="o.picking_type_code == 'outgoing'"><strong>Lieferadresse:</strong></span>
+                                <span t-if="o.picking_type_code == 'incoming'"><strong>Lieferant:</strong></span>
                             </div>
-                            <div t-if="o.move_lines and o.move_lines[0].partner_id" name="partner_header">
-                                <div t-field="o.move_lines[0].partner_id"
-                                   t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True}'/>
-                            </div>
+                            <div t-field="o.partner_id.parent_id.name"/>
+                            <div><span t-field="o.partner_id.title"/>&#160;<span t-field="o.partner_id.name"/></div>
                             <div t-if="not (o.move_lines and o.move_lines[0].partner_id) and o.partner_id" name="partner_header">
                                 <div t-field="o.partner_id"
-                                   t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True}'/>
+                                   t-options='{"widget": "contact", "fields": ["address", "phone"], "no_marker": True}'/>
                             </div>
                         </div>
                     </div>
                     <h2>
                         <span t-field="o.name"/>
                     </h2>
-                    <table class="table table-condensed">
+                    <br/>
+                    <table t-if="o.picking_type_code == 'outgoing'" class="table table-condensed">
                         <thead>
                             <tr>
-                                <th t-if="o.origin"><strong>Order</strong></th>
-                                <th name="td_sched_date_h">
-                                    <strong>Date</strong>
-                                </th>
-                                <th name="testfeld_h"><strong>Testfeld</strong></th>
+                                <th><strong>Mengenkontrakt</strong></th>
+                                <th><strong>Abrufnummer</strong></th>
+                                <th><strong>Position</strong></th>
+                                <th><strong>Datum</strong></th>
+                                <th><strong>Sachbearbeiter</strong></th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td t-if="o.origin">
-                                    <span t-field="o.origin"/>
-                                </td>
-                                <td name="td_sched_date">
-                                   <t t-if="o.state == 'done'">
-                                        <span t-field="o.date_done"/>
-                                   </t>
-                                   <t t-if="o.state != 'done'">
-                                        <span t-field="o.scheduled_date"/>
-                                   </t>
-                                </td>
-                                <td> -body- </td>
+                                <td><span t-field="o.geag_kontrakt"/></td>
+                                <td><span t-field="o.geag_abruf"/></td>
+                                <td><span t-field="o.geag_position"/></td>
+                                <td><span t-field="o.geag_delivery_date"/></td>
+                                <td><span t-field="o.geag_operator"/></td>
                             </tr>
                         </tbody>
                     </table>
-                    <table class="table table-condensed mt48" t-if="not o.move_line_ids">
+                    <table t-if="o.picking_type_code == 'incoming'" class="table table-condensed">
                         <thead>
                             <tr>
-                                <th><strong>Product</strong></th>
-                                <th><strong>Quantity</strong></th>
+                                <th><strong>Bestellnummer</strong></th>
+                                <th><strong>Position</strong></th>
+                                <th><strong>Plandatum</strong></th>
+                                <th><strong>Migo Nr.</strong></th>
+                                <th><strong>SAP gebucht</strong></th>
+                                <th><strong>Sachbearbeiter</strong></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span t-field="o.geag_forecast_bestellung"/></td>
+                                <td><span t-field="o.geag_forecast_position"/></td>
+                                <td><span t-field="o.geag_forecast_plandatum"/></td>
+                                <td><span t-field="o.geag_migo_nr"/></td>
+                                <td><span t-field="o.geag_sap_ok"/></td>
+                                <td><span t-field="o.geag_operator"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <table class="table table-condensed" t-if="not o.move_line_ids">
+                        <thead>
+                            <tr>
+                                <th><strong>Produkt</strong></th>
+                                <th><strong>Menge</strong></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -71,11 +87,11 @@
                         <t t-set="has_serial_number" t-value="o.move_line_ids.mapped('lot_id')" groups="stock.group_production_lot"/>
                         <thead>
                             <tr>
-                                <th><strong>Product</strong></th>
+                                <th><strong>Produkt</strong></th>
                                 <th name="lot_serial" t-if="has_serial_number">
-                                    Lot/Serial Number
+                                    Lot/Seriennummer
                                 </th>
-                                <th class="text-center"><strong>Quantity</strong></th>
+                                <th class="text-center"><strong>Menge</strong></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -90,28 +106,42 @@
                                     </p>
                                 </td>
                                 <t t-if="has_serial_number">
-                                   <td>
-                                        <table width="100%">
-                                            <tr>
-                                                <td>
-                                                     <span t-field="move_line.lot_id"/>
-                                                     <t t-if="not move_line.lot_id">
-                                                         <span t-field="move_line.lot_name"/>
-                                                     </t>
-                                                 </td>
-                                                 <td name="lot_qty">
-                                                     <t t-if="move_line.product_qty"> 
-                                                        <span t-field="move_line.product_qty"/>
-                                                    </t>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                  </td>
+                                   <td><span t-field="move_line.lot_id"/>&#160;&#160;<img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s'%('QR', move_line.lot_id.name, 50, 50)"/></td>
                                 </t>
                                 <td class="text-center">
                                     <span t-field="move_line.qty_done"/>
                                     <span t-field="move_line.product_uom_id"/>
                                 </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table t-if="o.picking_type_code == 'outgoing'" class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th><strong>Transportiert durch:</strong></th>
+                                <th><strong>Datum:</strong></th>
+                                <th><strong>Name Fahrer:</strong></th>
+                                <th><strong>Visum:</strong></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span t-field="o.geag_spediteur"/></td>
+                                <td><br/><br/></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table t-if="o.geag_notes" class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th><strong>Bemerkungen:</strong></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span t-field="o.geag_notes"/></td>
                             </tr>
                         </tbody>
                     </table>

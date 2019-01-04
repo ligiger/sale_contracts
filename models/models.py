@@ -400,6 +400,7 @@ class Picking(models.Model):
     geag_migo_nr = fields.Char(string="Migo Nummer")
     geag_sap_ok = fields.Boolean(string="SAP gebucht")
     geag_operator = fields.Many2one('res.users', string="Sachbearbeiter", default=lambda self: self.env.user)
+    geag_notes = fields.Html(string="Bemerkungen")
 
     geag_typ = fields.Selection([
         ('std', 'VMS Standard'),

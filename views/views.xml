@@ -426,6 +426,11 @@
           <field  name="geag_spediteur" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
           <field  name="geag_wird_abgeholt" attrs="{'invisible': [('picking_type_code', '!=', 'outgoing')]}"/>
         </xpath>
+        <xpath expr="//page[@name='extra']" position="after">
+          <page string="Bemerkungen">
+            <field  name="geag_notes"/>
+          </page>
+        </xpath>
       </field>
   </record>
 
